@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
+import React from "react";
 
-export default function Navbar() {
+export default function Navbar(): React.ReactElement {
   return (
     <nav className="bg-blue-600 text-white shadow-lg">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">

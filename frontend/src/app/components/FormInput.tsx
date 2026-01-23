@@ -1,4 +1,24 @@
-export default function FormInput({ label, type = 'text', name, value, onChange, placeholder, required = false }) {
+import React from "react";
+
+interface FormInputProps {
+  label: string;
+  type?: string;
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  required?: boolean;
+}
+
+export default function FormInput({
+  label,
+  type = "text",
+  name,
+  value,
+  onChange,
+  placeholder,
+  required = false,
+}: FormInputProps): React.ReactElement {
   return (
     <div className="mb-4">
       <label className="block text-gray-700 font-bold mb-2">{label}</label>

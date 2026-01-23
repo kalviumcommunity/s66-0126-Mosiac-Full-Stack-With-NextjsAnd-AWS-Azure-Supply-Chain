@@ -1,12 +1,13 @@
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
 
-export default function Home() {
+export default function Home(): React.ReactElement {
   return (
     <div className="container mx-auto px-4 py-16">
       <section className="text-center mb-16">
         <h1 className="text-5xl font-bold mb-4 text-gray-900">Welcome to climatrix</h1>
         <p className="text-xl text-gray-600 mb-8">
-          A modern full-stack application built with Next.js, React, and cutting-edge technologies.
+          Web app made for monitoring and analyzing the climate data.
         </p>
         <div className="flex gap-4 justify-center">
           <Link href="/auth/login" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded">

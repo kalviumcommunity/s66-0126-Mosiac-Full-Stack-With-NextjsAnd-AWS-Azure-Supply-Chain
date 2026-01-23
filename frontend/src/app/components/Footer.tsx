@@ -1,4 +1,6 @@
-export default function Footer() {
+import React from "react";
+
+export default function Footer(): React.ReactElement {
   return (
     <footer className="bg-gray-800 text-white py-8 mt-12">
       <div className="container mx-auto px-4">

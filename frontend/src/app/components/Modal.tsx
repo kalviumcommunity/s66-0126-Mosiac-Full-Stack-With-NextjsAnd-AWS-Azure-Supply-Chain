@@ -1,8 +1,20 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import React from "react";
 
-export default function Modal({ isOpen, onClose, title, children }) {
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+}
+
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+}: ModalProps): React.ReactElement | null {
   if (!isOpen) return null;
 
   return (

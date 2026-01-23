@@ -1,5 +1,7 @@
-export default function About() {
-return (
+import React from "react";
+
+export default function About(): React.ReactElement {
+  return (
     <div className="container mx-auto p-8">
     <h1 className="text-4xl font-bold mb-8">About Us</h1>
     <div className="bg-white rounded-lg shadow-md p-8">
