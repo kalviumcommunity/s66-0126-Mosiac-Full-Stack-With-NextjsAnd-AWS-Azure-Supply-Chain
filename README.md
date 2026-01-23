@@ -189,4 +189,39 @@ src/
 - `/actions` → Action Center  
 - `/community` → Commununity & impacts  
 
+The website running locally:
 
+![alt text](screenshots/image.png)
+
+# Tooling and Code Quality Documentation
+
+This document explains how TypeScript strict mode, ESLint, Prettier, and pre-commit hooks are used in this project to reduce bugs and maintain consistent code quality.
+
+---
+
+## Why Strict TypeScript Mode Reduces Runtime Bugs
+
+Strict TypeScript mode helps identify errors at compile time instead of runtime. When strict mode is enabled, TypeScript checks for issues such as null or undefined values, incorrect variable types, and missing function arguments. This prevents common JavaScript errors that could otherwise cause the application to crash while running. By catching these problems early, strict mode improves reliability and reduces runtime bugs.
+
+---
+
+## ESLint and Prettier Rules Used
+
+ESLint is used to enforce code quality and prevent common mistakes such as unused variables and incorrect syntax. It ensures that the code follows best practices and remains clean. Prettier is used to maintain consistent formatting across the project, including rules like using single quotes, adding semicolons, and proper indentation. Together, ESLint and Prettier make the code easier to read and maintain.
+
+---
+
+## How Pre-commit Hooks Improve Team Consistency
+
+Pre-commit hooks automatically run checks before code is committed to the repository. In this project, a pre-commit hook runs ESLint to ensure there are no linting errors. If an issue is found, the commit is blocked until the problem is fixed. This ensures that all team members follow the same coding standards and prevents broken or poorly formatted code from being pushed.
+
+---
+
+## ESLint Logs and Verification
+
+The following command was used to check for linting issues:
+
+```bash
+npx eslint .
+
+after running the output is empty meaning there was no errors
