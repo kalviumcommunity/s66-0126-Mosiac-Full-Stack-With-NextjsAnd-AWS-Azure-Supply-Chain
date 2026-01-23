@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import SettingsForm from './SettingsForm';
+import React from "react";
+import SettingsForm from "./SettingsForm";
 
-export default function Settings() {
+export default function Settings(): React.ReactElement {
   return (
     <div className="container mx-auto p-8">
       <h1 className="text-4xl font-bold mb-8">Settings</h1>

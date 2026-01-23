@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
-import DashboardCard from './DashboardCard';
-import DashboardChart from './DashboardChart';
+import React from "react";
+import DashboardCard from "./DashboardCard";
+import DashboardChart from "./DashboardChart";
 
-export default function Dashboard() {
+export default function Dashboard(): React.ReactElement {
   return (
     <div className="dashboard-container p-8">
       <h1 className="text-4xl font-bold mb-8">Dashboard</h1>
