@@ -1,5 +1,3 @@
-# Climatrix — Rendering Strategy Overview
-
 Climatrix is a climate intelligence dashboard designed to help citizens understand complex environmental data through clear visualizations and actionable insights. Since different parts of the application have different data freshness and performance requirements, we use Static Rendering (SSG), Dynamic Rendering (SSR), and Hybrid Rendering (ISR) strategically to optimize speed, scalability, and accuracy.
 
 ---
