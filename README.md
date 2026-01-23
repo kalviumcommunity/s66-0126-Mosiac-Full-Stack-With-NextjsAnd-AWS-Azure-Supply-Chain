@@ -187,6 +187,6 @@ src/
 - `/` → Homepage  
 - `/dashboard` → Main Dashboard  
 - `/actions` → Action Center  
-- `/community` → Community & Impact  
+- `/community` → Commununity & impacts  
 
 
