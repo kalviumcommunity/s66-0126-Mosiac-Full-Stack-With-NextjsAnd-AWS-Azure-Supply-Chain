@@ -160,4 +160,33 @@ Separate environments (dev, staging, production) are maintained for stability.
 ### Conclusion
 Using Docker, CI/CD, and cloud platforms helps Climatrix achieve secure, scalable, and production-ready deployments following real-world industry practices.
 
+##  Project Folder Structure
+
+src/
+├── app/
+│ ├── page.tsx # Homepage (Location selection)
+│ ├── dashboard/page.tsx # Climate dashboard
+│ ├── actions/page.tsx # Action center
+│ ├── community/page.tsx # Community & impact
+│ ├── layout.tsx # Root layout
+│ └── globals.css # Global styles
+│
+├── components/
+│ ├── common/ # Reusable UI components
+│ ├── dashboard/ # Charts & metrics
+│ ├── actions/ # Action components
+│ └── community/ # Community UI
+│
+└── lib/
+├── api/ # API logic
+└── utils/ # Helper functions
+
+
+##  Screen Routes
+
+- `/` → Homepage  
+- `/dashboard` → Main Dashboard  
+- `/actions` → Action Center  
+- `/community` → Community & Impact  
+
 
