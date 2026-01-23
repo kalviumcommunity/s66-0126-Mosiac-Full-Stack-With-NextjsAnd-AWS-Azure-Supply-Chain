@@ -4,7 +4,7 @@ import Navbar from '../../src/app/components/Navbar';
 describe('Navbar Component', () => {
   it('renders navigation links', () => {
     render(<Navbar />);
-    expect(screen.getByText('MyApp')).toBeInTheDocument();
+    expect(screen.getByText('climatrix')).toBeInTheDocument();
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
   });

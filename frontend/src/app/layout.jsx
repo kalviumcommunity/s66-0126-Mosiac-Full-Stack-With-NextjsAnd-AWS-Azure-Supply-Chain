@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "MyApp",
+  title: "climatrix",
   description: "A modern Next.js application",
 };
 

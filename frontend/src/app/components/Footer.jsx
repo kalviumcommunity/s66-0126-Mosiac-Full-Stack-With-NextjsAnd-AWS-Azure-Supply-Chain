@@ -22,7 +22,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-700 pt-4 text-center text-gray-400">
-          <p>&copy; 2024 MyApp. All rights reserved.</p>
+          <p>&copy; 2024 climatrix. All rights reserved.</p>
         </div>
       </div>
     </footer>

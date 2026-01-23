@@ -7,7 +7,7 @@ export default function Navbar() {
     <nav className="bg-blue-600 text-white shadow-lg">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <Link href="/" className="text-2xl font-bold">
-          MyApp
+          climatrix
         </Link>
         <ul className="flex space-x-6">
           <li><Link href="/" className="hover:text-gray-200">Home</Link></li>
