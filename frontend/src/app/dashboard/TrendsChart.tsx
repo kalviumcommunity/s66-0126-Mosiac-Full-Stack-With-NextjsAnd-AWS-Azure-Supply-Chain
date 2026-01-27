@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from "chart.js";
-import { Line } from "react-chartjs-2";
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, BarElement, Title, Tooltip, Legend } from "chart.js";
+import { Bar } from "react-chartjs-2";
 import { useTheme } from "next-themes";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
+ChartJS.register(CategoryScale, LinearScale, PointElement, BarElement, Title, Tooltip, Legend);
 
-export default function DashboardChart(): React.ReactElement {
+export default function TrendsChart(): React.ReactElement {
   const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
 
@@ -18,20 +18,34 @@ export default function DashboardChart(): React.ReactElement {
   const isDark = theme === "dark";
 
   const data = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    labels: ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"],
     datasets: [
       {
         label: "Temperature (°C)",
-        data: [24, 25, 26, 28, 27, 29, 28],
-        borderColor: isDark ? "#ef4444" : "#dc2626",
-        backgroundColor: isDark ? "rgba(239, 68, 68, 0.1)" : "rgba(220, 38, 38, 0.1)",
-        fill: true,
-        tension: 0.4,
-        borderWidth: 3,
-        pointRadius: 5,
-        pointBackgroundColor: isDark ? "#ef4444" : "#dc2626",
-        pointBorderColor: isDark ? "#1f2937" : "#ffffff",
-        pointBorderWidth: 2,
+        data: [24, 26, 25, 28, 30, 29],
+        backgroundColor: isDark ? "rgba(59, 130, 246, 0.7)" : "rgba(37, 99, 235, 0.7)",
+        borderColor: isDark ? "#3b82f6" : "#2563eb",
+        borderWidth: 2,
+        borderRadius: 8,
+        hoverBackgroundColor: isDark ? "rgba(59, 130, 246, 0.9)" : "rgba(37, 99, 235, 0.9)",
+      },
+      {
+        label: "Humidity (%)",
+        data: [65, 62, 68, 60, 55, 58],
+        backgroundColor: isDark ? "rgba(16, 185, 129, 0.7)" : "rgba(5, 150, 105, 0.7)",
+        borderColor: isDark ? "#10b981" : "#059669",
+        borderWidth: 2,
+        borderRadius: 8,
+        hoverBackgroundColor: isDark ? "rgba(16, 185, 129, 0.9)" : "rgba(5, 150, 105, 0.9)",
+      },
+      {
+        label: "Air Quality Index",
+        data: [55, 52, 58, 65, 72, 68],
+        backgroundColor: isDark ? "rgba(245, 158, 11, 0.7)" : "rgba(249, 115, 22, 0.7)",
+        borderColor: isDark ? "#f59e0b" : "#f97316",
+        borderWidth: 2,
+        borderRadius: 8,
+        hoverBackgroundColor: isDark ? "rgba(245, 158, 11, 0.9)" : "rgba(249, 115, 22, 0.9)",
       },
     ],
   };
@@ -51,6 +65,7 @@ export default function DashboardChart(): React.ReactElement {
           },
           padding: 15,
           usePointStyle: true,
+          pointStyle: "rect" as const,
         },
       },
       tooltip: {
@@ -60,11 +75,25 @@ export default function DashboardChart(): React.ReactElement {
         borderColor: isDark ? "#475569" : "#d1d5db",
         borderWidth: 1,
         padding: 12,
+        displayColors: true,
+        callbacks: {
+          label: function(context: any) {
+            let label = context.dataset.label || "";
+            if (label) {
+              label += ": ";
+            }
+            if (context.parsed.y !== null) {
+              label += context.parsed.y.toFixed(1);
+            }
+            return label;
+          },
+        },
       },
     },
     scales: {
       y: {
         beginAtZero: true,
+        max: 100,
         grid: {
           color: isDark ? "rgba(75, 85, 99, 0.2)" : "rgba(209, 213, 219, 0.3)",
           borderColor: isDark ? "#475569" : "#d1d5db",
@@ -98,17 +127,17 @@ export default function DashboardChart(): React.ReactElement {
     <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-slate-900/50 transition-colors">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Temperature Trend</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Weekly analysis of temperature variations</p>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Climate Trends</h3>
+          <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">6-week trend analysis of environmental metrics</p>
         </div>
         <select className="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-bold text-slate-600 dark:text-slate-300 rounded-lg px-3 py-2 transition-colors">
-          <option>Last 7 Days</option>
-          <option>Last 30 Days</option>
-          <option>Last 90 Days</option>
+          <option>Last 6 Weeks</option>
+          <option>Last 12 Weeks</option>
+          <option>Last 6 Months</option>
         </select>
       </div>
       <div className="h-80 w-full">
-        <Line data={data} options={options} />
+        <Bar data={data} options={options} />
       </div>
     </div>
   );
