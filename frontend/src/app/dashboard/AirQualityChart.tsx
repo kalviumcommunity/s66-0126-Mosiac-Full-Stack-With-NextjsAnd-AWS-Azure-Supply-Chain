@@ -136,13 +136,13 @@ export default function AirQualityChart(): React.ReactElement {
   if (!mounted) return <div>Loading...</div>;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-slate-900/50 transition-colors">
-      <div className="flex items-center justify-between mb-8">
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-2xl p-6 transition-all duration-300">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Air Quality Index</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Weekly analysis of pollutant levels</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">Weekly analysis of pollutant levels</p>
         </div>
-        <select className="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-bold text-slate-600 dark:text-slate-300 rounded-lg px-3 py-2 transition-colors">
+        <select className="bg-slate-100 dark:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-lg px-3 py-2 transition-colors">
           <option>Last 7 Days</option>
           <option>Last 30 Days</option>
           <option>Last 90 Days</option>

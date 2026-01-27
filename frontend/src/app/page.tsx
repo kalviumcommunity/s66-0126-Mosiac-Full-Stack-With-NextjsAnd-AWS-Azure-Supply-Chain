@@ -47,16 +47,26 @@ export default function Home(): React.ReactElement {
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-slate-950">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-40 overflow-hidden bg-gradient-to-b from-blue-50 dark:from-slate-900 to-white dark:to-slate-950">
+      <section className="relative pt-32 pb-40 overflow-hidden bg-gradient-to-b from-emerald-50 dark:from-slate-900 to-white dark:to-slate-950">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Floating weather icons */}
+          <div className="absolute top-20 left-10 text-6xl animate-bounce opacity-20">☁️</div>
+          <div className="absolute top-40 right-20 text-7xl animate-pulse opacity-15">🌤️</div>
+          <div className="absolute bottom-32 left-1/3 text-5xl animate-bounce opacity-20" style={{ animationDuration: "3s" }}>💨</div>
+          <div className="absolute top-1/2 right-1/4 text-6xl animate-spin opacity-10" style={{ animationDuration: "6s" }}>🌍</div>
+          <div className="absolute bottom-20 right-10 text-5xl animate-bounce opacity-15" style={{ animationDuration: "2.5s" }}>💧</div>
+        </div>
+
         <div className="max-w-[1440px] mx-auto px-6 relative z-10 text-center">
           <div className="max-w-4xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm font-semibold mb-8 border border-blue-200 dark:border-blue-800">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-emerald-100 dark:from-blue-900/30 dark:to-emerald-900/30 text-sm font-semibold mb-8 border border-emerald-200 dark:border-emerald-800 hover:shadow-lg transition-all">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-600 dark:bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600 dark:bg-blue-400"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gradient-to-r from-blue-600 to-emerald-600 dark:from-blue-400 dark:to-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-gradient-to-r from-blue-600 to-emerald-600 dark:from-blue-400 dark:to-emerald-400"></span>
               </span>
-              Real-time Climate Intelligence
+              <span className="bg-gradient-to-r from-blue-600 to-emerald-600 dark:from-blue-400 dark:to-emerald-400 text-transparent bg-clip-text">Real-time Climate Intelligence</span>
             </div>
 
             {/* Hero Headline */}
@@ -119,7 +129,7 @@ export default function Home(): React.ReactElement {
               </button>
               <Link
                 href="/dashboard"
-                className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 dark:from-blue-500 dark:to-emerald-500 dark:hover:from-blue-600 dark:hover:to-emerald-600 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl"
+                className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 dark:from-blue-500 dark:to-emerald-500 dark:hover:from-blue-600 dark:hover:to-emerald-600 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:scale-105 transform"
               >
                 Search
               </Link>
@@ -133,7 +143,7 @@ export default function Home(): React.ReactElement {
               {popularCities.map((city) => (
                 <button
                   key={city}
-                  className="px-4 py-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-blue-400 dark:hover:border-blue-600 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+                  className="px-4 py-2 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-emerald-400 dark:hover:border-emerald-600 hover:text-emerald-600 dark:hover:text-emerald-400 hover:shadow-md dark:hover:shadow-emerald-900/50 transition-all transform hover:scale-105"
                 >
                   {city}
                 </button>
@@ -143,7 +153,7 @@ export default function Home(): React.ReactElement {
         </div>
 
         {/* Decorative Elements */}
-        <div className="absolute top-20 right-0 w-96 h-96 bg-blue-200 dark:bg-blue-900/20 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 pointer-events-none" />
+        <div className="absolute top-20 right-0 w-96 h-96 bg-gradient-to-r from-blue-200 to-emerald-200 dark:from-emerald-900/20 dark:to-emerald-900/10 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 pointer-events-none" />
         <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-emerald-200 dark:bg-emerald-900/20 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 pointer-events-none" />
       </section>
 
@@ -163,13 +173,34 @@ export default function Home(): React.ReactElement {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700 hover:shadow-lg dark:hover:shadow-slate-900/50 transition-shadow hover:border-blue-300 dark:hover:border-blue-600"
+                className={`rounded-2xl p-8 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-2 ${
+                  index === 0 ? "bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800" :
+                  index === 1 ? "bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800" :
+                  index === 2 ? "bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800" :
+                  index === 3 ? "bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800" :
+                  index === 4 ? "bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800" :
+                  "bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-800"
+                }`}
               >
-                <div className="text-5xl mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">
+                <div className="text-6xl mb-4 transform hover:scale-110 transition-transform">{feature.icon}</div>
+                <h3 className={`text-xl font-bold mb-3 ${
+                  index === 0 ? "text-blue-900 dark:text-blue-100" :
+                  index === 1 ? "text-red-900 dark:text-red-100" :
+                  index === 2 ? "text-emerald-900 dark:text-emerald-100" :
+                  index === 3 ? "text-orange-900 dark:text-orange-100" :
+                  index === 4 ? "text-purple-900 dark:text-purple-100" :
+                  "text-cyan-900 dark:text-cyan-100"
+                }`}>
                   {feature.title}
                 </h3>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                <p className={`leading-relaxed ${
+                  index === 0 ? "text-blue-700 dark:text-blue-300" :
+                  index === 1 ? "text-red-700 dark:text-red-300" :
+                  index === 2 ? "text-emerald-700 dark:text-emerald-300" :
+                  index === 3 ? "text-orange-700 dark:text-orange-300" :
+                  index === 4 ? "text-purple-700 dark:text-purple-300" :
+                  "text-cyan-700 dark:text-cyan-300"
+                }`}>
                   {feature.description}
                 </p>
               </div>
@@ -199,8 +230,8 @@ export default function Home(): React.ReactElement {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-b from-white dark:from-slate-950 to-blue-50 dark:to-slate-900">
+      {/* CTA Section with Visual */}
+      <section className="py-24 bg-gradient-to-b from-white dark:from-slate-950 to-emerald-50 dark:to-slate-900">
         <div className="max-w-[1440px] mx-auto px-6">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 dark:from-slate-800 to-slate-800 dark:to-slate-900 p-12 md:p-16">
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
@@ -239,28 +270,32 @@ export default function Home(): React.ReactElement {
                   </Link>
                 </div>
               </div>
-              <div className="w-full max-w-md aspect-video bg-gradient-to-br from-blue-600 to-emerald-600 rounded-2xl shadow-2xl flex items-center justify-center">
-                <div className="text-center text-white">
-                  <svg
-                    className="w-16 h-16 mx-auto mb-4 opacity-80"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
-                  <p className="font-semibold text-sm">Dashboard Preview</p>
+              
+              {/* Animated Weather Visual */}
+              <div className="w-full max-w-md aspect-square rounded-2xl shadow-2xl overflow-hidden flex items-center justify-center relative bg-gradient-to-br from-blue-400 to-emerald-300 dark:from-blue-600 dark:to-emerald-600">
+                {/* Sky background */}
+                <div className="absolute inset-0 bg-gradient-to-b from-blue-300 to-emerald-100 dark:from-blue-700 dark:to-emerald-900" />
+                
+                {/* Animated clouds */}
+                <div className="absolute top-8 left-8 w-24 h-12 bg-white rounded-full opacity-70 animate-pulse" />
+                <div className="absolute top-20 right-12 w-28 h-14 bg-white rounded-full opacity-60 animate-bounce" style={{ animationDuration: "3s" }} />
+                <div className="absolute top-40 left-1/4 w-20 h-10 bg-white rounded-full opacity-75" />
+                
+                {/* Sun with animation */}
+                <div className="absolute top-12 right-1/4 w-16 h-16 bg-yellow-300 rounded-full shadow-2xl animate-spin" style={{ animationDuration: "20s" }} />
+                
+                {/* Rain drops animation */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-8xl animate-bounce">🌧️</div>
                 </div>
+                
+                {/* Bottom accent */}
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-emerald-600/20 to-transparent" />
               </div>
             </div>
 
             {/* Decorative background elements */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-20 right-0 w-96 h-96 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full opacity-10 blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
           </div>
         </div>
@@ -284,35 +319,39 @@ export default function Home(): React.ReactElement {
                 name: "Sarah Johnson",
                 role: "Environmental Officer",
                 content: "Climatrix has transformed how we monitor air quality in our city. The real-time alerts are invaluable.",
+                color: "bg-gradient-to-br from-blue-50 to-emerald-50 dark:from-blue-950/30 dark:to-emerald-950/30 border-emerald-200 dark:border-emerald-800"
               },
               {
                 name: "Marcus Chen",
                 role: "Sustainability Manager",
                 content: "The personalized action plans help our team make data-driven decisions. Highly recommended!",
+                color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800"
               },
               {
                 name: "Emma Williams",
                 role: "Climate Researcher",
                 content: "The data accuracy and coverage across cities is impressive. A must-have tool for climate work.",
+                color: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800"
               },
             ].map((testimonial, index) => (
               <div
                 key={index}
-                className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700"
+                className={`rounded-2xl p-8 border transition-all duration-300 hover:shadow-xl transform hover:-translate-y-2 ${testimonial.color}`}
               >
                 <div className="flex gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (
                     <svg
                       key={i}
-                      className="w-5 h-5 text-yellow-400"
+                      className="w-5 h-5 text-yellow-400 animate-bounce"
                       fill="currentColor"
                       viewBox="0 0 20 20"
+                      style={{ animationDelay: `${i * 0.1}s` }}
                     >
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   ))}
                 </div>
-                <p className="text-slate-700 dark:text-slate-300 mb-6 leading-relaxed">
+                <p className="text-slate-700 dark:text-slate-300 mb-6 leading-relaxed italic">
                   "{testimonial.content}"
                 </p>
                 <div>
@@ -329,24 +368,37 @@ export default function Home(): React.ReactElement {
         </div>
       </section>
 
-      {/* Newsletter Section */}
-      <section className="py-24 bg-white dark:bg-slate-950">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-6">
-            Stay updated on climate insights
-          </h2>
-          <p className="text-xl text-slate-600 dark:text-slate-400 mb-10">
-            Subscribe to get weekly climate reports and action recommendations for your area.
-          </p>
-          <div className="flex gap-2 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-4 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <button className="px-6 py-4 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white font-bold transition-all shadow-lg">
-              Subscribe
-            </button>
+      {/* Newsletter Section with Weather Animation */}
+      <section className="py-24 bg-gradient-to-b from-white dark:from-slate-950 to-slate-50 dark:to-slate-900">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-blue-100 dark:from-blue-950 via-emerald-50 dark:via-emerald-950 to-emerald-100 dark:to-emerald-950 p-12 md:p-16">
+            {/* Animated weather icons background */}
+            <div className="absolute top-4 left-8 text-5xl animate-bounce" style={{ animationDuration: "2s" }}>☀️</div>
+            <div className="absolute top-20 right-12 text-4xl animate-pulse">⛅</div>
+            <div className="absolute bottom-16 left-1/4 text-5xl animate-bounce" style={{ animationDuration: "3s" }}>💧</div>
+            <div className="absolute bottom-8 right-1/4 text-4xl animate-spin" style={{ animationDuration: "4s" }}>🌬️</div>
+            
+            <div className="relative z-10 text-center">
+              <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-6">
+                Stay updated on climate insights
+              </h2>
+              <p className="text-xl text-slate-700 dark:text-slate-300 mb-10 leading-relaxed">
+                Subscribe to get weekly climate reports and action recommendations for your area. Join thousands of climate-conscious citizens.
+              </p>
+              <div className="flex gap-3 max-w-md mx-auto">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 px-4 py-4 rounded-lg bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                />
+                <button className="px-8 py-4 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 dark:from-blue-500 dark:to-emerald-500 dark:hover:from-blue-600 dark:hover:to-emerald-600 text-white font-bold transition-all shadow-lg hover:shadow-xl hover:scale-105 transform">
+                  Subscribe
+                </button>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-4">
+                ✓ No spam • ✓ Unsubscribe anytime • ✓ Monthly insights
+              </p>
+            </div>
           </div>
         </div>
       </section>
