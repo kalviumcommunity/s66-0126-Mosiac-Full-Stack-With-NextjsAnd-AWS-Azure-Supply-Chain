@@ -7,7 +7,7 @@ import { useTheme } from "next-themes";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
-export default function DashboardChart(): React.ReactElement {
+export default function AirQualityChart(): React.ReactElement {
   const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
 
@@ -21,15 +21,41 @@ export default function DashboardChart(): React.ReactElement {
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     datasets: [
       {
-        label: "Temperature (°C)",
-        data: [24, 25, 26, 28, 27, 29, 28],
-        borderColor: isDark ? "#ef4444" : "#dc2626",
-        backgroundColor: isDark ? "rgba(239, 68, 68, 0.1)" : "rgba(220, 38, 38, 0.1)",
+        label: "PM2.5 (µg/m³)",
+        data: [45, 52, 48, 65, 55, 70, 42],
+        borderColor: isDark ? "#10b981" : "#059669",
+        backgroundColor: isDark ? "rgba(16, 185, 129, 0.1)" : "rgba(5, 150, 105, 0.1)",
         fill: true,
         tension: 0.4,
         borderWidth: 3,
         pointRadius: 5,
-        pointBackgroundColor: isDark ? "#ef4444" : "#dc2626",
+        pointBackgroundColor: isDark ? "#10b981" : "#059669",
+        pointBorderColor: isDark ? "#1f2937" : "#ffffff",
+        pointBorderWidth: 2,
+      },
+      {
+        label: "PM10 (µg/m³)",
+        data: [68, 75, 70, 82, 78, 88, 65],
+        borderColor: isDark ? "#f59e0b" : "#f97316",
+        backgroundColor: isDark ? "rgba(245, 158, 11, 0.1)" : "rgba(249, 115, 22, 0.1)",
+        fill: true,
+        tension: 0.4,
+        borderWidth: 3,
+        pointRadius: 5,
+        pointBackgroundColor: isDark ? "#f59e0b" : "#f97316",
+        pointBorderColor: isDark ? "#1f2937" : "#ffffff",
+        pointBorderWidth: 2,
+      },
+      {
+        label: "NO2 (ppb)",
+        data: [12, 15, 18, 14, 16, 20, 11],
+        borderColor: isDark ? "#3b82f6" : "#2563eb",
+        backgroundColor: isDark ? "rgba(59, 130, 246, 0.1)" : "rgba(37, 99, 235, 0.1)",
+        fill: true,
+        tension: 0.4,
+        borderWidth: 3,
+        pointRadius: 5,
+        pointBackgroundColor: isDark ? "#3b82f6" : "#2563eb",
         pointBorderColor: isDark ? "#1f2937" : "#ffffff",
         pointBorderWidth: 2,
       },
@@ -51,6 +77,7 @@ export default function DashboardChart(): React.ReactElement {
           },
           padding: 15,
           usePointStyle: true,
+          pointStyle: "circle",
         },
       },
       tooltip: {
@@ -60,11 +87,25 @@ export default function DashboardChart(): React.ReactElement {
         borderColor: isDark ? "#475569" : "#d1d5db",
         borderWidth: 1,
         padding: 12,
+        displayColors: true,
+        callbacks: {
+          label: function(context: any) {
+            let label = context.dataset.label || "";
+            if (label) {
+              label += ": ";
+            }
+            if (context.parsed.y !== null) {
+              label += context.parsed.y.toFixed(1);
+            }
+            return label;
+          },
+        },
       },
     },
     scales: {
       y: {
         beginAtZero: true,
+        max: 100,
         grid: {
           color: isDark ? "rgba(75, 85, 99, 0.2)" : "rgba(209, 213, 219, 0.3)",
           borderColor: isDark ? "#475569" : "#d1d5db",
@@ -98,8 +139,8 @@ export default function DashboardChart(): React.ReactElement {
     <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-slate-900/50 transition-colors">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Temperature Trend</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Weekly analysis of temperature variations</p>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Air Quality Index</h3>
+          <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">Weekly analysis of pollutant levels</p>
         </div>
         <select className="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-bold text-slate-600 dark:text-slate-300 rounded-lg px-3 py-2 transition-colors">
           <option>Last 7 Days</option>
