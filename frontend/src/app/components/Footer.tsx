@@ -8,7 +8,7 @@ export default function Footer(): React.ReactElement {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-6 h-6 bg-blue-600 dark:bg-blue-500 rounded flex items-center justify-center">
+              <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-emerald-600 dark:from-blue-500 dark:to-emerald-500 rounded flex items-center justify-center">
                 <svg
                   className="w-4 h-4 text-white"
                   fill="none"
