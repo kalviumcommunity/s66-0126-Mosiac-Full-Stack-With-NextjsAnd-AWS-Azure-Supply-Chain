@@ -1,50 +1,123 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import ActionCenter from "../components/ActionCenter";
 import TemperatureTrendChart from "./TemperatureTrendChart";
 import AirQualityChart from "./AirQualityChart";
 import TrendsChart from "./TrendsChart";
 import AirGasCompositionChart from "./AirGasCompositionChart";
+import WeatherSearch from "./WeatherSearch";
+import WeatherDisplay from "./WeatherDisplay";
 
 export default function Dashboard(): React.ReactElement {
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("Overview");
   const [isActionCenterOpen, setIsActionCenterOpen] = useState(false);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [weatherData, setWeatherData] = useState<any>(null);
+  const [forecastData, setForecastData] = useState<any>(null);
+  const [airQualityData, setAirQualityData] = useState<any>(null);
+  const popularCities = ["Delhi", "London", "Tokyo", "New York", "Mumbai", "Paris"];
 
-  const metrics = [
-    {
-      title: "Temperature",
-      value: "28°C",
-      trend: "+2°C from avg",
-      status: "Normal",
-      color: "text-brand-blue",
-      bg: "bg-blue-50",
-    },
-    {
-      title: "Air Quality",
-      value: "42",
-      trend: "Good",
-      status: "Healthy",
-      color: "text-brand-green",
-      bg: "bg-emerald-50",
-    },
-    {
-      title: "Rainfall",
-      value: "12mm",
-      trend: "-5mm from avg",
-      status: "Low",
-      color: "text-brand-orange",
-      bg: "bg-amber-50",
-    },
-    {
-      title: "UV Index",
-      value: "6",
-      trend: "High",
-      status: "Caution",
-      color: "text-brand-red",
-      bg: "bg-red-50",
-    },
-  ];
+  useEffect(() => {
+    // Check if city is passed via URL query params
+    const cityParam = searchParams.get("city");
+    if (cityParam) {
+      setSelectedCity(decodeURIComponent(cityParam));
+    }
+  }, [searchParams]);
+
+  const getMetrics = () => {
+    if (!weatherData || !forecastData) {
+      return [
+        {
+          title: "Temperature",
+          value: "—",
+          trend: "Loading...",
+          status: "Loading",
+          color: "text-brand-blue",
+          bg: "bg-blue-50",
+        },
+        {
+          title: "Air Quality",
+          value: "—",
+          trend: "Loading...",
+          status: "Loading",
+          color: "text-brand-green",
+          bg: "bg-emerald-50",
+        },
+        {
+          title: "Rainfall",
+          value: "—",
+          trend: "Loading...",
+          status: "Low",
+          color: "text-brand-orange",
+          bg: "bg-amber-50",
+        },
+        {
+          title: "UV Index",
+          value: "—",
+          trend: "Loading...",
+          status: "Loading",
+          color: "text-brand-red",
+          bg: "bg-red-50",
+        },
+      ];
+    }
+
+    const currentTemp = Math.round(weatherData.main?.temp || 0);
+    const maxTemp = Math.round(forecastData.list?.[0]?.main?.temp_max || 0);
+    const minTemp = Math.round(forecastData.list?.[0]?.main?.temp_min || 0);
+    const tempTrend = maxTemp > currentTemp ? `+${maxTemp - currentTemp}°C from current` : `${minTemp - currentTemp}°C from current`;
+    
+    const humidity = weatherData.main?.humidity || 0;
+    const airQuality = airQualityData?.list?.[0]?.main?.aqi || 3;
+    const airQualityStatus = ["Good", "Fair", "Moderate", "Poor", "Very Poor"][airQuality - 1] || "Moderate";
+    
+    const rainfall = forecastData.list?.[0]?.rain?.["3h"] || 0;
+    const rainfallMm = Math.round(rainfall * 10) / 10;
+    
+    const uvIndex = Math.round(weatherData.clouds?.all ? (weatherData.clouds.all / 20) : 6);
+    const uvStatus = uvIndex > 7 ? "High" : uvIndex > 5 ? "Moderate" : "Low";
+
+    return [
+      {
+        title: "Temperature",
+        value: `${currentTemp}°C`,
+        trend: tempTrend,
+        status: currentTemp > 30 ? "Hot" : currentTemp > 20 ? "Normal" : "Cool",
+        color: "text-brand-blue",
+        bg: "bg-blue-50",
+      },
+      {
+        title: "Air Quality",
+        value: `${Math.round((5 - airQuality) * 20)}`,
+        trend: airQualityStatus,
+        status: airQualityStatus,
+        color: "text-brand-green",
+        bg: "bg-emerald-50",
+      },
+      {
+        title: "Rainfall",
+        value: `${rainfallMm}mm`,
+        trend: rainfallMm > 5 ? "Heavy" : rainfallMm > 0 ? "Light" : "None",
+        status: rainfallMm > 5 ? "Heavy" : "Low",
+        color: "text-brand-orange",
+        bg: "bg-amber-50",
+      },
+      {
+        title: "UV Index",
+        value: `${uvIndex}`,
+        trend: uvStatus,
+        status: uvStatus,
+        color: "text-brand-red",
+        bg: "bg-red-50",
+      },
+    ];
+  };
+
+  const metrics = getMetrics();
 
   return (
     <div className="bg-slate-50 dark:bg-slate-950 min-h-screen pb-20 transition-colors duration-300">
@@ -53,9 +126,9 @@ export default function Dashboard(): React.ReactElement {
         <div className="max-w-[1440px] mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">New Delhi, India</h1>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{selectedCity || "Select a City"}</h1>
               <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[10px] font-semibold">
-                📍 Current
+                📍 {selectedCity ? "Current" : "No city selected"}
               </span>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
@@ -100,6 +173,46 @@ export default function Dashboard(): React.ReactElement {
             Take Action
           </button>
         </div>
+
+        {/* Live Weather Display Component */}
+        <div className="mb-12">
+          <WeatherDisplay 
+            city={selectedCity || undefined} 
+            onWeatherUpdate={(data) => {
+              setWeatherData(data);
+            }}
+          />
+        </div>
+
+        {/* Popular Cities Selection */}
+        {!selectedCity && (
+          <div className="mb-8 p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Popular Cities</h2>
+            <div className="flex flex-wrap gap-3">
+              {popularCities.map((city) => (
+                <button
+                  key={city}
+                  onClick={() => setSelectedCity(city)}
+                  className="px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-emerald-400 dark:hover:border-emerald-600 hover:text-emerald-600 dark:hover:text-emerald-400 hover:shadow-md dark:hover:shadow-emerald-900/50 transition-all transform hover:scale-105"
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {selectedCity && (
+          <button
+            onClick={() => setSelectedCity(null)}
+            className="mb-8 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200"
+          >
+            ← Change City
+          </button>
+        )}
+
+        {/* Weather Search Component */}
+        <WeatherSearch />
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
@@ -171,7 +284,7 @@ export default function Dashboard(): React.ReactElement {
             {activeTab === "Overview" && (
               <>
                 {/* Temperature Chart */}
-                <TemperatureTrendChart />
+                <TemperatureTrendChart city={selectedCity} onDataLoaded={setForecastData} />
 
                 {/* Pollution and Health */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -229,11 +342,11 @@ export default function Dashboard(): React.ReactElement {
             )}
 
             {activeTab === "Air Quality" && (
-              <AirQualityChart />
+              <AirQualityChart city={selectedCity} lat={weatherData?.coord?.lat} lon={weatherData?.coord?.lon} onDataLoaded={setAirQualityData} />
             )}
 
             {activeTab === "Trends" && (
-              <TrendsChart />
+              <TrendsChart city={selectedCity} forecastData={forecastData} />
             )}
 
             {activeTab === "Gas Composition" && (

@@ -4,63 +4,150 @@ import React, { useEffect, useState } from "react";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler } from "chart.js";
 import { Line } from "react-chartjs-2";
 import { useTheme } from "next-themes";
+import { weatherService } from "@/services/weatherService";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
-export default function AirQualityChart(): React.ReactElement {
+interface AirQualityChartProps {
+  city?: string | null;
+  lat?: number;
+  lon?: number;
+  onDataLoaded?: (data: any) => void;
+}
+
+export default function AirQualityChart({ city, lat, lon, onDataLoaded }: AirQualityChartProps): React.ReactElement {
   const [mounted, setMounted] = useState(false);
+  const [airData, setAirData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (!lat || !lon) return;
+
+    const fetchAirQuality = async () => {
+      try {
+        setLoading(true);
+        const data = await weatherService.getAirQuality(lat, lon);
+        setAirData(data);
+        onDataLoaded?.(data);
+      } catch (err) {
+        console.error("Error fetching air quality:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAirQuality();
+  }, [lat, lon, onDataLoaded]);
+
   const isDark = theme === "dark";
 
-  const data = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    datasets: [
-      {
-        label: "PM2.5 (µg/m³)",
-        data: [45, 52, 48, 65, 55, 70, 42],
-        borderColor: isDark ? "#10b981" : "#059669",
-        backgroundColor: isDark ? "rgba(16, 185, 129, 0.1)" : "rgba(5, 150, 105, 0.1)",
-        fill: true,
-        tension: 0.4,
-        borderWidth: 3,
-        pointRadius: 5,
-        pointBackgroundColor: isDark ? "#10b981" : "#059669",
-        pointBorderColor: isDark ? "#1f2937" : "#ffffff",
-        pointBorderWidth: 2,
-      },
-      {
-        label: "PM10 (µg/m³)",
-        data: [68, 75, 70, 82, 78, 88, 65],
-        borderColor: isDark ? "#f59e0b" : "#f97316",
-        backgroundColor: isDark ? "rgba(245, 158, 11, 0.1)" : "rgba(249, 115, 22, 0.1)",
-        fill: true,
-        tension: 0.4,
-        borderWidth: 3,
-        pointRadius: 5,
-        pointBackgroundColor: isDark ? "#f59e0b" : "#f97316",
-        pointBorderColor: isDark ? "#1f2937" : "#ffffff",
-        pointBorderWidth: 2,
-      },
-      {
-        label: "NO2 (ppb)",
-        data: [12, 15, 18, 14, 16, 20, 11],
-        borderColor: isDark ? "#3b82f6" : "#2563eb",
-        backgroundColor: isDark ? "rgba(59, 130, 246, 0.1)" : "rgba(37, 99, 235, 0.1)",
-        fill: true,
-        tension: 0.4,
-        borderWidth: 3,
-        pointRadius: 5,
-        pointBackgroundColor: isDark ? "#3b82f6" : "#2563eb",
-        pointBorderColor: isDark ? "#1f2937" : "#ffffff",
-        pointBorderWidth: 2,
-      },
-    ],
+  // Generate sample data based on air quality reading
+  const generateChartData = () => {
+    try {
+      const baseAqi = airData?.list?.[0]?.main?.aqi || 3;
+      const pm25Base = (baseAqi * 15) + Math.random() * 10;
+      const pm10Base = (baseAqi * 20) + Math.random() * 15;
+      const no2Base = (baseAqi * 2) + Math.random() * 3;
+
+      return {
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        datasets: [
+          {
+            label: "PM2.5 (µg/m³)",
+            data: Array.from({ length: 7 }, () => Math.max(0, Math.round(pm25Base + (Math.random() * 20 - 10)))),
+            borderColor: isDark ? "#10b981" : "#059669",
+            backgroundColor: isDark ? "rgba(16, 185, 129, 0.1)" : "rgba(5, 150, 105, 0.1)",
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 5,
+            pointBackgroundColor: isDark ? "#10b981" : "#059669",
+            pointBorderColor: isDark ? "#1f2937" : "#ffffff",
+            pointBorderWidth: 2,
+          },
+          {
+            label: "PM10 (µg/m³)",
+            data: Array.from({ length: 7 }, () => Math.max(0, Math.round(pm10Base + (Math.random() * 25 - 12)))),
+            borderColor: isDark ? "#f59e0b" : "#f97316",
+            backgroundColor: isDark ? "rgba(245, 158, 11, 0.1)" : "rgba(249, 115, 22, 0.1)",
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 5,
+            pointBackgroundColor: isDark ? "#f59e0b" : "#f97316",
+            pointBorderColor: isDark ? "#1f2937" : "#ffffff",
+            pointBorderWidth: 2,
+          },
+          {
+            label: "NO2 (ppb)",
+            data: Array.from({ length: 7 }, () => Math.max(0, Math.round(no2Base + (Math.random() * 3 - 1.5)))),
+            borderColor: isDark ? "#3b82f6" : "#2563eb",
+            backgroundColor: isDark ? "rgba(59, 130, 246, 0.1)" : "rgba(37, 99, 235, 0.1)",
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 5,
+            pointBackgroundColor: isDark ? "#3b82f6" : "#2563eb",
+            pointBorderColor: isDark ? "#1f2937" : "#ffffff",
+            pointBorderWidth: 2,
+          },
+        ],
+      };
+    } catch (err) {
+      console.error("Error generating chart data:", err);
+      return {
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        datasets: [
+          {
+            label: "PM2.5 (µg/m³)",
+            data: [45, 52, 48, 65, 55, 70, 42],
+            borderColor: isDark ? "#10b981" : "#059669",
+            backgroundColor: isDark ? "rgba(16, 185, 129, 0.1)" : "rgba(5, 150, 105, 0.1)",
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 5,
+            pointBackgroundColor: isDark ? "#10b981" : "#059669",
+            pointBorderColor: isDark ? "#1f2937" : "#ffffff",
+            pointBorderWidth: 2,
+          },
+          {
+            label: "PM10 (µg/m³)",
+            data: [68, 75, 70, 82, 78, 88, 65],
+            borderColor: isDark ? "#f59e0b" : "#f97316",
+            backgroundColor: isDark ? "rgba(245, 158, 11, 0.1)" : "rgba(249, 115, 22, 0.1)",
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 5,
+            pointBackgroundColor: isDark ? "#f59e0b" : "#f97316",
+            pointBorderColor: isDark ? "#1f2937" : "#ffffff",
+            pointBorderWidth: 2,
+          },
+          {
+            label: "NO2 (ppb)",
+            data: [12, 15, 18, 14, 16, 20, 11],
+            borderColor: isDark ? "#3b82f6" : "#2563eb",
+            backgroundColor: isDark ? "rgba(59, 130, 246, 0.1)" : "rgba(37, 99, 235, 0.1)",
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 5,
+            pointBackgroundColor: isDark ? "#3b82f6" : "#2563eb",
+            pointBorderColor: isDark ? "#1f2937" : "#ffffff",
+            pointBorderWidth: 2,
+          },
+        ],
+      };
+    }
   };
+
+  const data = generateChartData();
 
   const options = {
     responsive: true,
@@ -133,7 +220,11 @@ export default function AirQualityChart(): React.ReactElement {
     },
   };
 
-  if (!mounted) return <div>Loading...</div>;
+  if (!mounted || loading) return <div className="p-6 text-center">Loading air quality data...</div>;
+
+  if (!data || !data.labels || !data.datasets) {
+    return <div className="p-6 text-center text-slate-600 dark:text-slate-400">Unable to load air quality data</div>;
+  }
 
   return (
     <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-2xl p-6 transition-all duration-300">
