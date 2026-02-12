@@ -86,7 +86,23 @@ export default function Footer(): React.ReactElement {
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">
               Contact
             </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">support@climatrix.io</p>
+            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+              <li>
+                <a href="mailto:jannat.s66@kalvium.community" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  jannat.s66@kalvium.community
+                </a>
+              </li>
+              <li>
+                <a href="mailto:khushil.chopra.s66@kalvium.community" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  khushil.chopra.s66@kalvium.community
+                </a>
+              </li>
+              <li>
+                <a href="mailto:marvan.kasim.s66@kalvium.community" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  marvan.kasim.s66@kalvium.community
+                </a>
+              </li>
+            </ul>
             <div className="flex gap-4 mt-4">
               <a href="#" className="text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 <span className="sr-only">Twitter</span>

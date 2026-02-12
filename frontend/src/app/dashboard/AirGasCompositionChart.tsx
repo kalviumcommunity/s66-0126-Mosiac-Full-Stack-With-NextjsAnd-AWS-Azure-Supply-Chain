@@ -86,7 +86,7 @@ export default function AirGasCompositionChart(): React.ReactElement {
   };
 
   if (!mounted) {
-    return <div className="w-full h-96 bg-slate-100 dark:bg-slate-700 rounded-lg" />;
+    return <div className="w-full h-96 bg-slate-100 dark:bg-slate-700 rounded-lg animate-pulse" />;
   }
 
   return (

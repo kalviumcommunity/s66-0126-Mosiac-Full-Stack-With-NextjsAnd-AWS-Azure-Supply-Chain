@@ -1,464 +1,556 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import ActionCenter from "../components/ActionCenter";
+import { useSearchParams, useRouter } from "next/navigation";
+import { WeatherDisplay } from "@/components/WeatherDisplay";
 import TemperatureTrendChart from "./TemperatureTrendChart";
-import AirQualityChart from "./AirQualityChart";
-import TrendsChart from "./TrendsChart";
-import AirGasCompositionChart from "./AirGasCompositionChart";
-import WeatherSearch from "./WeatherSearch";
-import WeatherDisplay from "./WeatherDisplay";
+
+interface WeatherData {
+  name: string;
+  main: {
+    temp: number;
+    feels_like: number;
+    humidity: number;
+    pressure: number;
+  };
+  weather: Array<{
+    main: string;
+    description: string;
+    icon: string;
+  }>;
+  wind: {
+    speed: number;
+  };
+  clouds: {
+    all: number;
+  };
+  sys: {
+    country: string;
+    sunrise: number;
+    sunset: number;
+  };
+}
 
 export default function Dashboard(): React.ReactElement {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState("Overview");
-  const [isActionCenterOpen, setIsActionCenterOpen] = useState(false);
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
-  const [weatherData, setWeatherData] = useState<any>(null);
-  const [forecastData, setForecastData] = useState<any>(null);
-  const [airQualityData, setAirQualityData] = useState<any>(null);
-  const popularCities = ["Delhi", "London", "Tokyo", "New York", "Mumbai", "Paris"];
+  const cityParam = searchParams.get('city') || '';
+  
+  const [city, setCity] = useState(cityParam);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
 
+
+  // Fetch weather data when city changes
   useEffect(() => {
-    // Check if city is passed via URL query params
-    const cityParam = searchParams.get("city");
-    if (cityParam) {
-      setSelectedCity(decodeURIComponent(cityParam));
+    if (!city) return;
+    
+    const fetchWeatherData = async () => {
+      try {
+        const response = await fetch(`/api/weather/city?city=${encodeURIComponent(city)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setWeatherData(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch weather:', error);
+      }
+    };
+
+    fetchWeatherData();
+  }, [city]);
+
+  // Get default city if no city is provided
+  useEffect(() => {
+    if (!city && typeof window !== 'undefined') {
+      setCity('Mumbai'); // Default city
     }
-  }, [searchParams]);
+  }, [city]);
 
-  const getMetrics = () => {
-    if (!weatherData || !forecastData) {
-      return [
-        {
-          title: "Temperature",
-          value: "—",
-          trend: "Loading...",
-          status: "Loading",
-          color: "text-brand-blue",
-          bg: "bg-blue-50",
-        },
-        {
-          title: "Air Quality",
-          value: "—",
-          trend: "Loading...",
-          status: "Loading",
-          color: "text-brand-green",
-          bg: "bg-emerald-50",
-        },
-        {
-          title: "Rainfall",
-          value: "—",
-          trend: "Loading...",
-          status: "Low",
-          color: "text-brand-orange",
-          bg: "bg-amber-50",
-        },
-        {
-          title: "UV Index",
-          value: "—",
-          trend: "Loading...",
-          status: "Loading",
-          color: "text-brand-red",
-          bg: "bg-red-50",
-        },
-      ];
+  // Generate dynamic metrics based on weather data
+  const metrics = weatherData ? [
+    {
+      title: "Temperature",
+      value: `${Math.round(weatherData.main.temp)}°C`,
+      trend: `Feels like ${Math.round(weatherData.main.feels_like)}°C`,
+      status: weatherData.main.temp > 35 ? "High" : weatherData.main.temp < 10 ? "Low" : "Normal",
+      color: "text-brand-blue",
+      bg: "bg-blue-50",
+    },
+    {
+      title: "Air Quality",
+      value: weatherData.clouds.all <= 33 ? "Good" : weatherData.clouds.all <= 66 ? "Moderate" : "Poor",
+      trend: `${weatherData.clouds.all}% Cloud Cover`,
+      status: "Monitoring",
+      color: "text-brand-green",
+      bg: "bg-emerald-50",
+    },
+    {
+      title: "Humidity",
+      value: `${weatherData.main.humidity}%`,
+      trend: weatherData.main.humidity > 70 ? "High" : weatherData.main.humidity < 30 ? "Low" : "Moderate",
+      status: "Normal",
+      color: "text-brand-orange",
+      bg: "bg-amber-50",
+    },
+    {
+      title: "Wind Speed",
+      value: `${Math.round(weatherData.wind.speed)} m/s`,
+      trend: weatherData.wind.speed > 10 ? "Windy" : "Calm",
+      status: "Normal",
+      color: "text-brand-red",
+      bg: "bg-red-50",
+    },
+  ] : [
+    {
+      title: "Temperature",
+      value: "Loading...",
+      trend: "",
+      status: "Normal",
+      color: "text-brand-blue",
+      bg: "bg-blue-50",
+    },
+    {
+      title: "Air Quality",
+      value: "Loading...",
+      trend: "",
+      status: "Healthy",
+      color: "text-brand-green",
+      bg: "bg-emerald-50",
+    },
+    {
+      title: "Humidity",
+      value: "Loading...",
+      trend: "",
+      status: "Normal",
+      color: "text-brand-orange",
+      bg: "bg-amber-50",
+    },
+    {
+      title: "Wind Speed",
+      value: "Loading...",
+      trend: "",
+      status: "Normal",
+      color: "text-brand-red",
+      bg: "bg-red-50",
+    },
+  ];
+
+  // Generate alert based on temperature and weather conditions
+  const getAlert = () => {
+    if (!weatherData) return null;
+    const temp = weatherData.main.temp;
+    const humidity = weatherData.main.humidity;
+    const windSpeed = weatherData.wind.speed;
+    const cloudiness = weatherData.clouds.all;
+
+    // High priority alerts
+    if (temp > 40) {
+      return {
+        title: "🔥 Extreme Heat Alert",
+        message: `Temperature is ${Math.round(temp)}°C. Avoid outdoor activities and stay hydrated.`,
+        severity: "high",
+      };
+    } else if (temp > 35) {
+      return {
+        title: "⚠️ Heatwave Alert",
+        message: `High temperature of ${Math.round(temp)}°C expected. Limit outdoor activities.`,
+        severity: "high",
+      };
+    } else if (temp < 0) {
+      return {
+        title: "❄️ Freezing Alert",
+        message: `Temperature at ${Math.round(temp)}°C. Risk of frost and ice. Bundle up!`,
+        severity: "high",
+      };
+    } else if (humidity > 85) {
+      return {
+        title: "💧 High Humidity Alert",
+        message: `Humidity at ${humidity}%. Expect muggy conditions and possible discomfort.`,
+        severity: "high",
+      };
+    } else if (windSpeed > 15) {
+      return {
+        title: "💨 Strong Wind Alert",
+        message: `Wind speed at ${Math.round(windSpeed)} m/s. Secure loose objects outdoors.`,
+        severity: "high",
+      };
     }
+    
+    // Medium priority alerts
+    else if (temp > 30) {
+      return {
+        title: "☀️ Hot Weather Notice",
+        message: `Temperature at ${Math.round(temp)}°C. Stay hydrated and use sun protection.`,
+        severity: "medium",
+      };
+    } else if (temp < 5) {
+      return {
+        title: "🌡️ Cold Weather Notice",
+        message: `Temperature at ${Math.round(temp)}°C. Dress warmly and protect exposed skin.`,
+        severity: "medium",
+      };
+    } else if (humidity > 75) {
+      return {
+        title: "💧 Humid Conditions",
+        message: `Humidity at ${humidity}%. Feels warmer than actual temperature.`,
+        severity: "medium",
+      };
+    } else if (humidity < 30) {
+      return {
+        title: "🏜️ Low Humidity",
+        message: `Humidity at ${humidity}%. Dry air may cause discomfort. Stay hydrated.`,
+        severity: "medium",
+      };
+    } else if (windSpeed > 10) {
+      return {
+        title: "💨 Windy Conditions",
+        message: `Wind speed at ${Math.round(windSpeed)} m/s. Breezy weather expected.`,
+        severity: "medium",
+      };
+    } else if (cloudiness > 80) {
+      return {
+        title: "☁️ Overcast Sky",
+        message: `Cloud cover at ${cloudiness}%. Cloudy conditions throughout the day.`,
+        severity: "medium",
+      };
+    }
+    
+    // Default comfortable conditions notice
+    else if (temp >= 18 && temp <= 25 && humidity >= 40 && humidity <= 65) {
+      return {
+        title: "✨ Ideal Climate Conditions",
+        message: `Perfect weather! Temperature at ${Math.round(temp)}°C with ${humidity}% humidity. Great day for outdoor activities.`,
+        severity: "medium",
+      };
+    } else if (temp >= 15 && temp <= 28) {
+      return {
+        title: "🌤️ Pleasant Weather",
+        message: `Comfortable temperature at ${Math.round(temp)}°C. Enjoy the moderate climate conditions.`,
+        severity: "medium",
+      };
+    }
+    
+    // Fallback for any other conditions
+    else {
+      return {
+        title: "🌍 Current Climate Status",
+        message: `Temperature: ${Math.round(temp)}°C, Humidity: ${humidity}%. Monitor local conditions and plan accordingly.`,
+        severity: "medium",
+      };
+    }
+  };
 
-    const currentTemp = Math.round(weatherData.main?.temp || 0);
-    const maxTemp = Math.round(forecastData.list?.[0]?.main?.temp_max || 0);
-    const minTemp = Math.round(forecastData.list?.[0]?.main?.temp_min || 0);
-    const tempTrend = maxTemp > currentTemp ? `+${maxTemp - currentTemp}°C from current` : `${minTemp - currentTemp}°C from current`;
-    
-    const humidity = weatherData.main?.humidity || 0;
-    const airQuality = airQualityData?.list?.[0]?.main?.aqi || 3;
-    const airQualityStatus = ["Good", "Fair", "Moderate", "Poor", "Very Poor"][airQuality - 1] || "Moderate";
-    
-    const rainfall = forecastData.list?.[0]?.rain?.["3h"] || 0;
-    const rainfallMm = Math.round(rainfall * 10) / 10;
-    
-    const uvIndex = Math.round(weatherData.clouds?.all ? (weatherData.clouds.all / 20) : 6);
-    const uvStatus = uvIndex > 7 ? "High" : uvIndex > 5 ? "Moderate" : "Low";
+  const alert = getAlert();
 
+  // Generate pollution data based on weather conditions
+  const getPollutionData = () => {
+    if (!weatherData) return [];
+    
+    const temp = weatherData.main.temp;
+    const humidity = weatherData.main.humidity;
+    const windSpeed = weatherData.wind.speed;
+    
+    // Higher temp and lower wind speed = worse air quality
+    const basePollution = Math.round(30 + (35 - Math.min(temp, 35)) * 2 - windSpeed * 5);
+    
     return [
-      {
-        title: "Temperature",
-        value: `${currentTemp}°C`,
-        trend: tempTrend,
-        status: currentTemp > 30 ? "Hot" : currentTemp > 20 ? "Normal" : "Cool",
-        color: "text-brand-blue",
-        bg: "bg-blue-50",
+      { 
+        label: "PM2.5", 
+        value: Math.max(15, basePollution - 20), 
+        max: 100, 
+        color: "from-emerald-500 to-teal-500", 
+        badgeColor: "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300" 
       },
-      {
-        title: "Air Quality",
-        value: `${Math.round((5 - airQuality) * 20)}`,
-        trend: airQualityStatus,
-        status: airQualityStatus,
-        color: "text-brand-green",
-        bg: "bg-emerald-50",
+      { 
+        label: "PM10", 
+        value: Math.max(30, basePollution), 
+        max: 100, 
+        color: "from-amber-500 to-orange-500", 
+        badgeColor: "bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300" 
       },
-      {
-        title: "Rainfall",
-        value: `${rainfallMm}mm`,
-        trend: rainfallMm > 5 ? "Heavy" : rainfallMm > 0 ? "Light" : "None",
-        status: rainfallMm > 5 ? "Heavy" : "Low",
-        color: "text-brand-orange",
-        bg: "bg-amber-50",
-      },
-      {
-        title: "UV Index",
-        value: `${uvIndex}`,
-        trend: uvStatus,
-        status: uvStatus,
-        color: "text-brand-red",
-        bg: "bg-red-50",
+      { 
+        label: "NO2", 
+        value: Math.max(5, Math.round((35 - Math.min(temp, 35)) + humidity / 10)), 
+        max: 100, 
+        color: "from-blue-500 to-cyan-500", 
+        badgeColor: "bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300" 
       },
     ];
   };
 
-  const metrics = getMetrics();
+  // Generate health recommendations based on weather
+  const getHealthRecommendations = () => {
+    if (!weatherData) return { title: "Loading...", message: "", recommendations: [], icon: "⚠️" };
+    
+    const temp = weatherData.main.temp;
+    const humidity = weatherData.main.humidity;
+    const pollution = getPollutionData();
+    const avgPollution = Math.round((pollution[0].value + pollution[1].value) / 2);
+
+    if (temp > 35 && avgPollution > 50) {
+      return {
+        title: "⚠️ Limit Outdoor Activities",
+        message: "High temperature and pollution. Avoid prolonged outdoor exposure.",
+        icon: "⚠️",
+        recommendations: [
+          "Use N95 masks if going outside",
+          "Stay in air-conditioned areas",
+          "Drink plenty of water",
+          "Avoid peak hours (11 AM - 4 PM)"
+        ]
+      };
+    } else if (temp > 35) {
+      return {
+        title: "🌡️ Hot Weather",
+        message: "High temperatures. Take precautions.",
+        icon: "🌡️",
+        recommendations: [
+          "Wear light, breathable clothing",
+          "Stay hydrated",
+          "Use sunscreen (SPF 30+)",
+          "Avoid peak sun hours"
+        ]
+      };
+    } else if (avgPollution > 50) {
+      return {
+        title: "💨 Poor Air Quality",
+        message: "Air quality is compromised. Consider mask usage.",
+        icon: "💨",
+        recommendations: [
+          "Wear N95 recommended",
+          "Limit outdoor activities",
+          "Keep windows closed",
+          "Use air purifier indoors"
+        ]
+      };
+    } else if (humidity > 75) {
+      return {
+        title: "💧 High Humidity",
+        message: "Uncomfortable humidity levels. Stay cool.",
+        icon: "💧",
+        recommendations: [
+          "Wear loose clothing",
+          "Stay in shade",
+          "Keep hydrated",
+          "Avoid strenuous activities"
+        ]
+      };
+    } else {
+      return {
+        title: "✅ Good Conditions",
+        message: "Great conditions for outdoor activities.",
+        icon: "✅",
+        recommendations: [
+          "Ideal for exercise",
+          "Wear light clothing",
+          "Good time for outdoor work",
+          "Perfect for nature walks"
+        ]
+      };
+    }
+  };
+
+  // Generate actions based on weather conditions
+  const generateActions = () => {
+    if (!weatherData) return [];
+
+    const temp = weatherData.main.temp;
+    const humidity = weatherData.main.humidity;
+    const windSpeed = weatherData.wind.speed;
+    const cloudCover = weatherData.clouds.all;
+
+    const actions: Array<{
+      title: string;
+      desc: string;
+      severity: "high" | "medium" | "low";
+      icon: string;
+    }> = [];
+
+    // Temperature-based actions
+    if (temp > 40) {
+      actions.push({
+        title: "🔥 Extreme Heat Alert",
+        desc: "Avoid all outdoor activities. Stay in air-conditioned spaces.",
+        severity: "high",
+        icon: "🔥",
+      });
+      actions.push({
+        title: "💧 Drink Plenty of Water",
+        desc: "Drink at least 4-5 liters of water daily to prevent dehydration.",
+        severity: "high",
+        icon: "💧",
+      });
+    } else if (temp > 35) {
+      actions.push({
+        title: "⚠️ High Temperature",
+        desc: "Limit outdoor activities to early morning/evening.",
+        severity: "high",
+        icon: "⚠️",
+      });
+      actions.push({
+        title: "🧴 Use Sunscreen",
+        desc: "Apply SPF 30+ sunscreen every 2 hours when outdoors.",
+        severity: "medium",
+        icon: "🧴",
+      });
+    } else if (temp < 5) {
+      actions.push({
+        title: "❄️ Freezing Temperature",
+        desc: "Wear multiple layers and limit outdoor exposure.",
+        severity: "high",
+        icon: "❄️",
+      });
+      actions.push({
+        title: "🧣 Bundle Up",
+        desc: "Wear warm clothing, hats, and gloves.",
+        severity: "high",
+        icon: "🧣",
+      });
+    } else if (temp > 28) {
+      actions.push({
+        title: "🌡️ Warm Weather",
+        desc: "Comfortable for activities with sun protection.",
+        severity: "low",
+        icon: "🌡️",
+      });
+    } else {
+      actions.push({
+        title: "✅ Pleasant Temperature",
+        desc: "Great conditions for outdoor activities.",
+        severity: "low",
+        icon: "✅",
+      });
+    }
+
+    // Humidity-based actions
+    if (humidity > 80) {
+      actions.push({
+        title: "💧 High Humidity",
+        desc: `Humidity at ${humidity}%. Wear light, breathable clothing.`,
+        severity: "medium",
+        icon: "💧",
+      });
+    } else if (humidity < 30) {
+      actions.push({
+        title: "🏜️ Low Humidity",
+        desc: `Humidity at ${humidity}%. Use moisturizer and drink water.`,
+        severity: "low",
+        icon: "🏜️",
+      });
+    }
+
+    // Wind-based actions
+    if (windSpeed > 10) {
+      actions.push({
+        title: "🌪️ Strong Winds",
+        desc: "Secure outdoor items and be careful when going outside.",
+        severity: "medium",
+        icon: "🌪️",
+      });
+    }
+
+    // Cloud cover actions
+    if (cloudCover < 10) {
+      actions.push({
+        title: "☀️ Clear Skies",
+        desc: "Strong UV rays. Use sun protection when outside.",
+        severity: "medium",
+        icon: "☀️",
+      });
+    }
+
+    return actions;
+  };
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen pb-20 transition-colors duration-300">
-      {/* Top Bar */}
-      <div className="bg-white dark:bg-slate-900 sticky top-[73px] z-40 transition-colors duration-300">
-        <div className="max-w-[1440px] mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="bg-white dark:bg-slate-900 min-h-screen pb-20 transition-colors duration-300">
+      {/* Header */}
+      <div className="sticky top-[73px] z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 transition-colors duration-300">
+        <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{selectedCity || "Select a City"}</h1>
-              <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[10px] font-semibold">
-                📍 {selectedCity ? "Current" : "No city selected"}
-              </span>
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-              Last updated: Today, 12:45 PM
+            <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">
+              {city || 'Select a city'}
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Updated {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Refresh
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-emerald-500 text-white text-sm font-semibold shadow-sm hover:from-blue-600 hover:to-emerald-600 transition-all duration-200">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-              Export
-            </button>
-          </div>
         </div>
       </div>
 
-      <div className="max-w-[1440px] mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
         {/* Alert Banner */}
-        <div className="mb-8 p-5 bg-red-50 dark:bg-red-950/30 rounded-2xl flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-red-500 flex items-center justify-center text-white flex-shrink-0">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-bold text-red-900 dark:text-red-100">⚠️ Heatwave Alert</h3>
-              <p className="text-sm text-red-800 dark:text-red-200">Temperatures expected above 40°C. Stay hydrated and avoid peak hours.</p>
-            </div>
-          </div>
-          <button 
-            onClick={() => setIsActionCenterOpen(true)}
-            className="px-5 py-2 bg-red-500 text-white font-semibold text-sm rounded-lg hover:bg-red-600 transition-all duration-200 flex-shrink-0"
-          >
-            Take Action
-          </button>
-        </div>
-
-        {/* Live Weather Display Component */}
-        <div className="mb-12">
-          <WeatherDisplay 
-            city={selectedCity || undefined} 
-            onWeatherUpdate={(data) => {
-              setWeatherData(data);
-            }}
-          />
-        </div>
-
-        {/* Popular Cities Selection */}
-        {!selectedCity && (
-          <div className="mb-8 p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Popular Cities</h2>
-            <div className="flex flex-wrap gap-3">
-              {popularCities.map((city) => (
-                <button
-                  key={city}
-                  onClick={() => setSelectedCity(city)}
-                  className="px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-emerald-400 dark:hover:border-emerald-600 hover:text-emerald-600 dark:hover:text-emerald-400 hover:shadow-md dark:hover:shadow-emerald-900/50 transition-all transform hover:scale-105"
-                >
-                  {city}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {selectedCity && (
-          <button
-            onClick={() => setSelectedCity(null)}
-            className="mb-8 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200"
-          >
-            ← Change City
-          </button>
-        )}
-
-        {/* Weather Search Component */}
-        <WeatherSearch />
-
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-          {metrics.map((m) => (
-            <div key={m.title} className={`rounded-2xl p-6 transition-all duration-300 ${
-              m.title === "Temperature" ? "bg-red-50 dark:bg-red-950/30" :
-              m.title === "Air Quality" ? "bg-emerald-50 dark:bg-emerald-950/30" :
-              m.title === "Rainfall" ? "bg-blue-50 dark:bg-blue-950/30" :
-              "bg-orange-50 dark:bg-orange-950/30"
-            }`}>
-              <div className="flex items-center justify-between mb-4">
-                <span className={`text-xs font-bold uppercase tracking-wider ${
-                  m.title === "Temperature" ? "text-red-700 dark:text-red-300" :
-                  m.title === "Air Quality" ? "text-emerald-700 dark:text-emerald-300" :
-                  m.title === "Rainfall" ? "text-blue-700 dark:text-blue-300" :
-                  "text-orange-700 dark:text-orange-300"
-                }`}>{m.title}</span>
-                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                  m.title === "Temperature" ? "bg-red-500 text-white" :
-                  m.title === "Air Quality" ? "bg-emerald-500 text-white" :
-                  m.title === "Rainfall" ? "bg-blue-500 text-white" :
-                  "bg-orange-500 text-white"
-                }`}>
-                  {m.status}
-                </span>
-              </div>
+        {alert ? (
+          <div className={`p-6 rounded-xl border-l-4 flex items-center justify-between gap-4 shadow-lg hover:shadow-xl transition-all duration-200 ${
+            alert.severity === 'high' 
+              ? 'border-red-500 bg-red-50 dark:bg-red-950/40' 
+              : 'border-amber-500 bg-amber-50 dark:bg-amber-950/40'
+          }`}>
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">{alert.title.split(' ')[0]}</span>
               <div>
-                <div className={`text-4xl font-bold mb-1 ${
-                  m.title === "Temperature" ? "text-red-900 dark:text-red-100" :
-                  m.title === "Air Quality" ? "text-emerald-900 dark:text-emerald-100" :
-                  m.title === "Rainfall" ? "text-blue-900 dark:text-blue-100" :
-                  "text-orange-900 dark:text-orange-100"
-                }`}>{m.value}</div>
-                <div className={`text-xs font-medium ${
-                  m.title === "Temperature" ? "text-red-700 dark:text-red-300" :
-                  m.title === "Air Quality" ? "text-emerald-700 dark:text-emerald-300" :
-                  m.title === "Rainfall" ? "text-blue-700 dark:text-blue-300" :
-                  "text-orange-700 dark:text-orange-300"
-                }`}>{m.trend}</div>
+                <h3 className={`font-semibold text-base ${
+                  alert.severity === 'high' 
+                    ? 'text-red-900 dark:text-red-100' 
+                    : 'text-amber-900 dark:text-amber-100'
+                }`}>{alert.title}</h3>
+                <p className={`text-sm ${
+                  alert.severity === 'high' 
+                    ? 'text-red-700 dark:text-red-200' 
+                    : 'text-amber-700 dark:text-amber-200'
+                }`}>{alert.message}</p>
               </div>
             </div>
-          ))}
-        </div>
-
-        {/* Tabbed Content */}
-        <div className="mb-6 flex items-center gap-8 pb-4">
-          {["Overview", "Air Quality", "Weather", "Trends", "Gas Composition"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`text-sm font-semibold transition-all relative pb-3 ${
-                activeTab === tab 
-                  ? "text-blue-600 dark:text-blue-400" 
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+            <button 
+              onClick={() => router.push(`/dashboard/actions?city=${encodeURIComponent(city)}`)}
+              className={`px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition-colors flex-shrink-0 shadow-md hover:shadow-lg ${
+                alert.severity === 'high' 
+                  ? 'bg-red-600 hover:bg-red-700' 
+                  : 'bg-amber-600 hover:bg-amber-700'
               }`}
             >
-              {tab}
-              {activeTab === tab && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-emerald-500 dark:from-blue-400 dark:to-emerald-400 rounded-full" />
-              )}
+              Take Action
             </button>
-          ))}
-        </div>
-
-        {/* Main Content Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {/* Tab Content */}
-            {activeTab === "Overview" && (
-              <>
-                {/* Temperature Chart */}
-                <TemperatureTrendChart city={selectedCity} onDataLoaded={setForecastData} />
-
-                {/* Pollution and Health */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-2xl p-6 transition-all duration-300">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-amber-500"></span>
-                      Pollution Levels
-                    </h3>
-                    <div className="space-y-4">
-                      {[
-                        { label: "PM2.5", value: 45, max: 100, color: "from-emerald-500 to-teal-500", badgeColor: "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300" },
-                        { label: "PM10", value: 68, max: 100, color: "from-amber-500 to-orange-500", badgeColor: "bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300" },
-                        { label: "NO2", value: 12, max: 100, color: "from-blue-500 to-cyan-500", badgeColor: "bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300" },
-                      ].map((p) => (
-                        <div key={p.label}>
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{p.label}</span>
-                            <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${p.badgeColor}`}>{p.value} µg/m³</span>
-                          </div>
-                          <div className="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full bg-gradient-to-r ${p.color} transition-all duration-1000`}
-                              style={{ width: `${p.value}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="bg-gradient-to-br from-emerald-50 to-slate-100 dark:from-emerald-950/30 dark:to-slate-900/50 rounded-2xl p-6 transition-all duration-300">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
-                      Health Impact
-                    </h3>
-                    <div className="flex items-center gap-3 p-4 bg-emerald-100 dark:bg-emerald-950/40 rounded-xl mb-4">
-                      <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white text-lg flex-shrink-0">✓</div>
-                      <div>
-                        <div className="text-sm font-bold text-emerald-900 dark:text-emerald-100">Good for Outdoor Activities</div>
-                        <p className="text-xs text-emerald-700 dark:text-emerald-200 mt-0.5">Air quality is ideal for exercise</p>
-                      </div>
-                    </div>
-                    <ul className="text-xs space-y-2 text-slate-600 dark:text-slate-300 font-medium">
-                      <li className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        Wear light clothing
-                      </li>
-                      <li className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        Ideal for planting trees
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {activeTab === "Air Quality" && (
-              <AirQualityChart city={selectedCity} lat={weatherData?.coord?.lat} lon={weatherData?.coord?.lon} onDataLoaded={setAirQualityData} />
-            )}
-
-            {activeTab === "Trends" && (
-              <TrendsChart city={selectedCity} forecastData={forecastData} />
-            )}
-
-            {activeTab === "Gas Composition" && (
-              <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-2xl p-6 transition-all duration-300">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Air Gas Composition</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Atmospheric gases breakdown</p>
-                  </div>
-                </div>
-                <div className="flex justify-center mb-6">
-                  <div className="w-full max-w-lg">
-                    <AirGasCompositionChart />
-                  </div>
-                </div>
-                <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50 dark:bg-blue-950/30 rounded-xl p-4 transition-all duration-200 hover:shadow-md">
-                    <div className="text-xs text-blue-600 dark:text-blue-400 font-bold uppercase">Nitrogen (N₂)</div>
-                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-2">78%</div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">Most abundant</div>
-                  </div>
-                  <div className="bg-emerald-50 dark:bg-emerald-950/30 rounded-xl p-4 transition-all duration-200 hover:shadow-md">
-                    <div className="text-xs text-emerald-600 dark:text-emerald-400 font-bold uppercase">Oxygen (O₂)</div>
-                    <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">21%</div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">Essential for life</div>
-                  </div>
-                  <div className="bg-indigo-50 dark:bg-indigo-950/30 rounded-xl p-4 transition-all duration-200 hover:shadow-md">
-                    <div className="text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase">Argon (Ar)</div>
-                    <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-2">0.93%</div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">Inert gas</div>
-                  </div>
-                  <div className="bg-red-50 dark:bg-red-950/30 rounded-xl p-4 transition-all duration-200 hover:shadow-md">
-                    <div className="text-xs text-red-600 dark:text-red-400 font-bold uppercase">CO₂</div>
-                    <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-2">0.04%</div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">Greenhouse gas</div>
-                  </div>
-                  <div className="bg-orange-50 dark:bg-orange-950/30 rounded-xl p-4 transition-all duration-200 hover:shadow-md">
-                    <div className="text-xs text-orange-600 dark:text-orange-400 font-bold uppercase">NO₂</div>
-                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mt-2">0.002%</div>
-                    <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">Air pollutant</div>
-                  </div>
-                  <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 transition-all duration-200 hover:shadow-md">
-                    <div className="text-xs text-slate-600 dark:text-slate-400 font-bold uppercase">Other Gases</div>
-                    <div className="text-2xl font-bold text-slate-600 dark:text-slate-400 mt-2">0.028%</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-500 mt-1">Trace elements</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "Weather" && (
-              <div className="bg-gradient-to-br from-blue-50 to-slate-100 dark:from-blue-950/30 dark:to-slate-900/50 rounded-2xl p-6 transition-all duration-300">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Weather Forecast</h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">Coming soon - detailed weather forecasting and analysis</p>
-              </div>
-            )}
           </div>
+        ) : null}
 
-          {/* Quick Actions Sidebar */}
-          <div className="space-y-6">
-            <div className="bg-gradient-to-br from-blue-50 to-slate-50 dark:from-blue-950/40 dark:to-slate-900 rounded-2xl p-6 transition-all duration-300">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">Actions</h3>
-              <div className="grid grid-cols-1 gap-3">
-                {[
-                  { icon: "🌱", label: "Plant Trees", count: "128 Pledged", color: "bg-green-100 dark:bg-green-950/40" },
-                  { icon: "🚲", label: "Reduce Travel", count: "Eco-Friendly", color: "bg-blue-100 dark:bg-blue-950/40" },
-                  { icon: "⚡", label: "Save Energy", count: "Smart Tips", color: "bg-orange-100 dark:bg-orange-950/40" },
-                ].map((action) => (
-                  <button key={action.label} className={`flex items-center justify-between p-4 rounded-xl ${action.color} hover:opacity-80 transition-all duration-200 group`}>
-                    <div className="flex items-center gap-3 text-left">
-                      <span className="text-2xl">{action.icon}</span>
-                      <div>
-                        <div className="text-sm font-bold text-slate-900 dark:text-slate-100">{action.label}</div>
-                        <div className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">{action.count}</div>
-                      </div>
+        {/* Main Content */}
+        {city ? (
+          <>
+            {/* Weather Display */}
+            <WeatherDisplay city={city} />
+
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {metrics.map((metric, index) => {
+                const metricColors = {
+                  0: "border-l-4 border-red-500 bg-red-50 dark:bg-red-950/30",
+                  1: "border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/30",
+                  2: "border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-950/30",
+                  3: "border-l-4 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30",
+                };
+
+                return (
+                  <div key={index} className={`rounded-xl p-6 transition-all duration-200 shadow-lg hover:shadow-xl ${metricColors[index]}`}>
+                    <p className="text-xs font-medium text-slate-600 dark:text-slate-300 uppercase tracking-wide mb-3">{metric.title}</p>
+                    <div>
+                      <p className="text-3xl font-bold text-slate-900 dark:text-white">{metric.value}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 mt-2">{metric.trend}</p>
                     </div>
-                    <svg className="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                ))}
-              </div>
+                  </div>
+                );
+              })}
             </div>
-
-            <div className="bg-blue-50 dark:bg-blue-950/30 rounded-2xl p-6 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase">Efficiency</h3>
-              </div>
-              <div className="text-center pb-4">
-                <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-1">84%</div>
-                <div className="text-xs font-bold text-slate-600 dark:text-slate-400">Personal Score</div>
-              </div>
-              <div className="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 w-[84%]" />
-              </div>
-              <p className="mt-4 text-[10px] text-center text-slate-600 dark:text-slate-400 font-bold leading-relaxed">
-                You're in top 5% this month!
-              </p>
-            </div>
+          </>
+        ) : (
+          <div className="mb-8 p-8 bg-slate-100 dark:bg-slate-800 rounded-2xl text-center">
+            <p className="text-slate-600 dark:text-slate-400">Loading location...</p>
           </div>
-        </div>
+        )}
+
+        {/* Temperature Trend Chart */}
+        {city && weatherData && <TemperatureTrendChart city={city} />}
       </div>
-
-      <ActionCenter 
-        isOpen={isActionCenterOpen} 
-        onClose={() => setIsActionCenterOpen(false)} 
-      />
     </div>
   );
 }
