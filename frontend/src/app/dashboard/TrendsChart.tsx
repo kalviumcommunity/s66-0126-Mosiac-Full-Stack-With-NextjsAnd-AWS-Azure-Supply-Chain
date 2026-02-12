@@ -7,97 +7,48 @@ import { useTheme } from "next-themes";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, BarElement, Title, Tooltip, Legend);
 
-interface TrendsChartProps {
-  city?: string | null;
-  forecastData?: any;
-}
-
-export default function TrendsChart({ city, forecastData }: TrendsChartProps): React.ReactElement {
+export default function TrendsChart({ city = "Mumbai" }: { city?: string }): React.ReactElement {
   const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState(false);
   const { theme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (forecastData) {
-      setLoading(false);
-    }
-  }, [forecastData]);
-
   const isDark = theme === "dark";
 
-  const generateTrendData = () => {
-    const weeks = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"];
-    
-    // Generate realistic trend data from forecast or use defaults
-    let tempData = [24, 26, 25, 28, 30, 29];
-    let humidityData = [65, 62, 68, 60, 55, 58];
-    let aqiData = [55, 52, 58, 65, 72, 68];
-
-    if (forecastData?.list) {
-      // Calculate weekly averages from 5-day forecast data
-      const weeklyTemps: number[] = [];
-      const weeklyHumidity: number[] = [];
-      const weeklyAqi: number[] = [];
-
-      try {
-        forecastData.list.forEach((item: any, index: number) => {
-          if (!item || !item.main) return;
-          if (index % 8 === 0) { // Every 8 items (1 day in 3-hour intervals)
-            weeklyTemps.push(Math.round(item.main?.temp || 25));
-            weeklyHumidity.push(item.main?.humidity || 65);
-            weeklyAqi.push(Math.round((6 - (item.main?.aqi || 3)) * 10));
-          }
-        });
-      } catch (err) {
-        console.error("Error processing forecast data:", err);
-      }
-
-      if (weeklyTemps.length > 0) {
-        tempData = weeklyTemps.slice(0, 6).concat(Array(6).fill(25)).slice(0, 6);
-        humidityData = weeklyHumidity.slice(0, 6).concat(Array(6).fill(65)).slice(0, 6);
-        aqiData = weeklyAqi.slice(0, 6).concat(Array(6).fill(55)).slice(0, 6);
-      }
-    }
-
-    return {
-      labels: weeks,
-      datasets: [
-        {
-          label: "Temperature (°C)",
-          data: tempData,
-          backgroundColor: isDark ? "rgba(59, 130, 246, 0.7)" : "rgba(37, 99, 235, 0.7)",
-          borderColor: isDark ? "#3b82f6" : "#2563eb",
-          borderWidth: 2,
-          borderRadius: 8,
-          hoverBackgroundColor: isDark ? "rgba(59, 130, 246, 0.9)" : "rgba(37, 99, 235, 0.9)",
-        },
-        {
-          label: "Humidity (%)",
-          data: humidityData,
-          backgroundColor: isDark ? "rgba(16, 185, 129, 0.7)" : "rgba(5, 150, 105, 0.7)",
-          borderColor: isDark ? "#10b981" : "#059669",
-          borderWidth: 2,
-          borderRadius: 8,
-          hoverBackgroundColor: isDark ? "rgba(16, 185, 129, 0.9)" : "rgba(5, 150, 105, 0.9)",
-        },
-        {
-          label: "Air Quality Index",
-          data: aqiData,
-          backgroundColor: isDark ? "rgba(245, 158, 11, 0.7)" : "rgba(249, 115, 22, 0.7)",
-          borderColor: isDark ? "#f59e0b" : "#f97316",
-          borderWidth: 2,
-          borderRadius: 8,
-          hoverBackgroundColor: isDark ? "rgba(245, 158, 11, 0.9)" : "rgba(249, 115, 22, 0.9)",
-        },
-      ],
-    };
+  const data = {
+    labels: ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"],
+    datasets: [
+      {
+        label: "Temperature (°C)",
+        data: [24, 26, 25, 28, 30, 29],
+        backgroundColor: isDark ? "rgba(59, 130, 246, 0.7)" : "rgba(37, 99, 235, 0.7)",
+        borderColor: isDark ? "#3b82f6" : "#2563eb",
+        borderWidth: 2,
+        borderRadius: 8,
+        hoverBackgroundColor: isDark ? "rgba(59, 130, 246, 0.9)" : "rgba(37, 99, 235, 0.9)",
+      },
+      {
+        label: "Humidity (%)",
+        data: [65, 62, 68, 60, 55, 58],
+        backgroundColor: isDark ? "rgba(16, 185, 129, 0.7)" : "rgba(5, 150, 105, 0.7)",
+        borderColor: isDark ? "#10b981" : "#059669",
+        borderWidth: 2,
+        borderRadius: 8,
+        hoverBackgroundColor: isDark ? "rgba(16, 185, 129, 0.9)" : "rgba(5, 150, 105, 0.9)",
+      },
+      {
+        label: "Air Quality Index",
+        data: [55, 52, 58, 65, 72, 68],
+        backgroundColor: isDark ? "rgba(245, 158, 11, 0.7)" : "rgba(249, 115, 22, 0.7)",
+        borderColor: isDark ? "#f59e0b" : "#f97316",
+        borderWidth: 2,
+        borderRadius: 8,
+        hoverBackgroundColor: isDark ? "rgba(245, 158, 11, 0.9)" : "rgba(249, 115, 22, 0.9)",
+      },
+    ],
   };
-
-  const data = generateTrendData();
 
   const options = {
     responsive: true,
@@ -170,14 +121,14 @@ export default function TrendsChart({ city, forecastData }: TrendsChartProps): R
     },
   };
 
-  if (!mounted || loading) return <div className="p-6 text-center">Loading trends data...</div>;
+  if (!mounted) return <div>Loading...</div>;
 
   return (
     <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-2xl p-6 transition-all duration-300">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Climate Trends</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400">6-week trend analysis of environmental metrics</p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">6-week trend in {city}</p>
         </div>
         <select className="bg-slate-100 dark:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-lg px-3 py-2 transition-colors">
           <option>Last 6 Weeks</option>

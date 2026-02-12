@@ -3,7 +3,6 @@
 import Link from "next/link";
 import React from "react";
 import { usePathname } from "next/navigation";
-import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar(): React.ReactElement {
   const pathname = usePathname();
@@ -12,6 +11,7 @@ export default function Navbar(): React.ReactElement {
     { name: "Home", href: "/" },
     { name: "Dashboard", href: "/dashboard" },
     { name: "Community", href: "/community" },
+    { name: "About", href: "/about" },
   ];
 
   return (
@@ -61,14 +61,6 @@ export default function Navbar(): React.ReactElement {
               </li>
             ))}
           </ul>
-          <div className="h-6 w-px bg-slate-200 dark:bg-slate-700" />
-          <ThemeToggle />
-          <Link
-            href="/auth/login"
-            className="text-sm font-semibold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          >
-            Sign In
-          </Link>
           <Link
             href="/dashboard"
             className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm"

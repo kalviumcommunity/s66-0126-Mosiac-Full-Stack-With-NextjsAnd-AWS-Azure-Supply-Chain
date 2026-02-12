@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 
 export default function Community(): React.ReactElement {
   const stats = [
@@ -9,36 +8,69 @@ export default function Community(): React.ReactElement {
     { label: "Active Groups", value: "2,500", icon: "🤝" },
   ];
 
-  const groups = [
+  const initiatives = [
     {
-      name: "Delhi Green Warriors",
-      members: "12.5K",
-      activity: "High",
-      desc: "Focused on local air quality and urban forestry.",
+      title: "Plant a Tree Challenge",
+      description: "Join 50,000+ people planting trees in their local communities",
+      participants: "52,341",
+      icon: "🌱",
+      color: "emerald"
     },
     {
-      name: "Sustainable South Delhi",
-      members: "8.2K",
-      activity: "Very High",
-      desc: "Waste management and solar energy initiatives.",
+      title: "Zero Waste Month",
+      description: "Reduce your household waste to zero for 30 days",
+      participants: "23,890",
+      icon: "♻️",
+      color: "green"
     },
     {
-      name: "Clean Yamuna Project",
-      members: "25K+",
-      activity: "Extreme",
-      desc: "Protecting and cleaning the city's lifeline.",
+      title: "Carpool Network",
+      description: "Connect with neighbors to share rides and reduce emissions",
+      participants: "18,765",
+      icon: "🚙",
+      color: "blue"
     },
+    {
+      title: "Solar Energy Adoption",
+      description: "Switch to renewable energy sources for your home",
+      participants: "31,204",
+      icon: "☀️",
+      color: "amber"
+    }
+  ];
+
+  const tips = [
+    {
+      title: "Switch to LED Bulbs",
+      impact: "Save 75% energy",
+      icon: "💡"
+    },
+    {
+      title: "Use Reusable Bags",
+      impact: "Reduce 500+ plastic bags/year",
+      icon: "🛍️"
+    },
+    {
+      title: "Compost Food Waste",
+      impact: "Divert 30% of trash",
+      icon: "🥬"
+    },
+    {
+      title: "Use Public Transport",
+      impact: "Cut 4,800 lbs CO2/year",
+      icon: "🚌"
+    }
   ];
 
   return (
-    <div className="bg-brand-bg min-h-screen">
+    <div className="bg-white dark:bg-slate-900 min-h-screen">
       {/* Header */}
-      <section className="bg-white border-b border-slate-200 py-16">
+      <section className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 py-16">
         <div className="max-w-[1440px] mx-auto px-6 text-center">
-          <h1 className="text-5xl font-extrabold text-slate-900 mb-6 tracking-tight">
-            Our Collective <span className="text-brand-green">Impact</span>
+          <h1 className="text-5xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight">
+            Our Collective <span className="bg-gradient-to-r from-blue-600 to-emerald-600 dark:from-blue-400 dark:to-emerald-400 text-transparent bg-clip-text">Impact</span>
           </h1>
-          <p className="text-xl text-slate-500 max-w-2xl mx-auto font-medium leading-relaxed">
+          <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto font-medium leading-relaxed">
             Join thousands of citizens taking small steps for a massive change.
             Track our progress and find local groups near you.
           </p>
@@ -47,79 +79,83 @@ export default function Community(): React.ReactElement {
 
       <div className="max-w-[1440px] mx-auto px-6 py-16">
         {/* Statistics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-          {stats.map((s) => (
-            <div key={s.label} className="glass-card p-8 text-center group hover:border-brand-green transition-all">
-              <div className="text-4xl mb-4 grayscale group-hover:grayscale-0 transition-all">{s.icon}</div>
-              <div className="text-3xl font-black text-slate-900 mb-1">{s.value}</div>
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">{s.label}</div>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
+          {stats.map((s, index) => {
+            const colors = [
+              "border-l-4 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30",
+              "border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-950/30",
+              "border-l-4 border-amber-500 bg-amber-50 dark:bg-amber-950/30",
+              "border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-950/30",
+            ];
+            return (
+              <div key={s.label} className={`rounded-xl p-6 text-center shadow-lg hover:shadow-xl transition-all duration-200 ${colors[index]}`}>
+                <div className="text-4xl mb-4 transform group-hover:scale-110 transition-transform">{s.icon}</div>
+                <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{s.value}</div>
+                <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">{s.label}</div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Local Groups */}
+        {/* Community Initiatives */}
         <div className="mb-20">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">Local Groups</h2>
-              <p className="text-sm text-slate-500 font-medium mt-1">Join a community near your location</p>
-            </div>
-            <button className="text-brand-blue font-bold text-sm hover:underline">View All Groups</button>
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Active Initiatives</h2>
+            <p className="text-slate-600 dark:text-slate-400">Join community-driven projects making real impact</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {groups.map((group) => (
-              <div key={group.name} className="glass-card p-6 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-50 text-brand-green flex items-center justify-center font-bold text-xl">
-                    {group.name[0]}
-                  </div>
-                  <span className="px-2 py-1 rounded-md bg-emerald-50 text-brand-green text-[10px] font-black uppercase">
-                    {group.activity} Activity
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {initiatives.map((initiative) => (
+              <div key={initiative.title} className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 rounded-2xl p-8 border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="text-5xl">{initiative.icon}</div>
+                  <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-100 to-emerald-100 dark:from-blue-900/30 dark:to-emerald-900/30 text-sm font-bold">
+                    <span className="bg-gradient-to-r from-blue-700 to-emerald-700 dark:from-blue-400 dark:to-emerald-400 text-transparent bg-clip-text">
+                      {initiative.participants} joined
+                    </span>
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-2">{group.name}</h3>
-                <p className="text-sm text-slate-500 mb-6 flex-1">{group.desc}</p>
-                <div className="flex items-center justify-between pt-6 border-t border-slate-50">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
-                    {group.members} Members
-                  </span>
-                  <button className="px-4 py-2 rounded-lg bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors">
-                    Join Group
-                  </button>
-                </div>
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">{initiative.title}</h3>
+                <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">{initiative.description}</p>
+                <button className="w-full bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
+                  Join Initiative
+                </button>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Achievements Section */}
-        <div className="glass-card bg-brand-blue p-12 text-white relative overflow-hidden">
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="max-w-xl">
-              <h2 className="text-3xl font-bold mb-6">Your Recent Achievement</h2>
-              <div className="p-6 bg-white/10 border border-white/20 rounded-2xl mb-8 backdrop-blur-md">
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-3xl">🏆</div>
-                  <div>
-                    <h4 className="text-xl font-bold">Eco-Guardian Silver</h4>
-                    <p className="text-blue-100 text-sm">You have reduced your carbon footprint by 15% this month.</p>
-                  </div>
-                </div>
+        {/* Quick Action Tips */}
+        <div className="mb-20">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Quick Climate Actions</h2>
+            <p className="text-slate-600 dark:text-slate-400">Small changes that make a big difference</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {tips.map((tip) => (
+              <div key={tip.title} className="bg-white dark:bg-slate-800 rounded-xl p-6 border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-200 shadow-md hover:shadow-xl">
+                <div className="text-4xl mb-4">{tip.icon}</div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{tip.title}</h3>
+                <p className="bg-gradient-to-r from-blue-600 to-emerald-600 dark:from-blue-400 dark:to-emerald-400 text-transparent bg-clip-text font-semibold text-sm">{tip.impact}</p>
               </div>
-              <div className="flex gap-4">
-                <button className="px-6 py-3 rounded-xl bg-white text-brand-blue font-bold text-sm hover:bg-blue-50 transition-colors">
-                  Share Achievement
-                </button>
-                <button className="px-6 py-3 rounded-xl bg-white/10 text-white font-bold text-sm hover:bg-white/20 transition-colors">
-                  View Badges
-                </button>
-              </div>
-            </div>
-            <div className="hidden md:block opacity-20 transform rotate-12">
-              <svg className="w-64 h-64" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-            </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className="bg-gradient-to-r from-blue-600 to-emerald-600 dark:from-blue-700 dark:to-emerald-700 rounded-2xl p-12 text-center shadow-2xl">
+          <h2 className="text-4xl font-extrabold text-white mb-4">Ready to Make a Difference?</h2>
+          <p className="text-blue-50 text-lg mb-8 max-w-2xl mx-auto">
+            Your actions matter. Join our community today and be part of the solution to climate change.
+          </p>
+          <div className="flex gap-4 justify-center flex-wrap">
+            <button className="bg-white hover:bg-slate-50 font-bold py-4 px-8 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl">
+              <span className="bg-gradient-to-r from-blue-600 to-emerald-600 text-transparent bg-clip-text">
+                Start Your Journey
+              </span>
+            </button>
+            <button className="bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold py-4 px-8 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl">
+              Learn More
+            </button>
           </div>
         </div>
       </div>

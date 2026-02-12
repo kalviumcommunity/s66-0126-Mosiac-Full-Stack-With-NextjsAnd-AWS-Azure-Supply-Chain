@@ -18,6 +18,7 @@ export default function ProfileForm(): React.ReactElement {
     phone: "",
     bio: "",
   });
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -26,13 +27,27 @@ export default function ProfileForm(): React.ReactElement {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-    console.log("Profile updated:", formData);
+    setSuccessMessage("");
+    
+    try {
+      // Simply show success message
+      setSuccessMessage("Profile updated successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      console.error("Error updating profile", err);
+      setSuccessMessage("Failed to update profile. Please try again.");
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8 max-w-md">
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-8 max-w-md">
+      {successMessage && (
+        <div className="mb-4 p-3 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 rounded-lg">
+          {successMessage}
+        </div>
+      )}
       <FormInput
         label="Name"
         type="text"

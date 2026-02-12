@@ -1,17 +1,10 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { CityCard } from "@/components/CityCard";
+import { SearchBar } from "@/components/SearchBar";
 
 export default function Home(): React.ReactElement {
-  const router = useRouter();
   const popularCities = ["Delhi", "London", "Tokyo", "New York", "Mumbai", "Paris"];
-
-  const handleCityClick = (city: string) => {
-    // Navigate to dashboard - the city will be selected via state
-    router.push(`/dashboard?city=${encodeURIComponent(city)}`);
-  };
 
   const features = [
     {
@@ -60,18 +53,19 @@ export default function Home(): React.ReactElement {
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Floating weather icons */}
-          <div className="absolute top-20 left-10 text-6xl opacity-20">☁️</div>
-          <div className="absolute top-40 right-20 text-7xl opacity-15">🌤️</div>
-          <div className="absolute bottom-32 left-1/3 text-5xl opacity-20">💨</div>
-          <div className="absolute top-1/2 right-1/4 text-6xl opacity-10">🌍</div>
-          <div className="absolute bottom-20 right-10 text-5xl opacity-15">💧</div>
+          <div className="absolute top-20 left-10 text-6xl animate-bounce opacity-20">☁️</div>
+          <div className="absolute top-40 right-20 text-7xl animate-pulse opacity-15">🌤️</div>
+          <div className="absolute bottom-32 left-1/3 text-5xl animate-bounce opacity-20" style={{ animationDuration: "3s" }}>💨</div>
+          <div className="absolute top-1/2 right-1/4 text-6xl animate-spin opacity-10" style={{ animationDuration: "6s" }}>🌍</div>
+          <div className="absolute bottom-20 right-10 text-5xl animate-bounce opacity-15" style={{ animationDuration: "2.5s" }}>💧</div>
         </div>
 
         <div className="max-w-[1440px] mx-auto px-6 relative z-10 text-center">
           <div className="max-w-4xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-emerald-100 dark:from-blue-900/30 dark:to-emerald-900/30 text-sm font-semibold mb-8 border border-emerald-200 dark:border-emerald-800">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-emerald-100 dark:from-blue-900/30 dark:to-emerald-900/30 text-sm font-semibold mb-8 border border-emerald-200 dark:border-emerald-800 hover:shadow-lg transition-all">
               <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gradient-to-r from-blue-600 to-emerald-600 dark:from-blue-400 dark:to-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-gradient-to-r from-blue-600 to-emerald-600 dark:from-blue-400 dark:to-emerald-400"></span>
               </span>
               <span className="bg-gradient-to-r from-blue-600 to-emerald-600 dark:from-blue-400 dark:to-emerald-400 text-transparent bg-clip-text">Real-time Climate Intelligence</span>
@@ -92,56 +86,7 @@ export default function Home(): React.ReactElement {
             </p>
 
             {/* Search Bar */}
-            <div className="bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-xl dark:shadow-slate-900/50 border border-slate-200 dark:border-slate-700 flex items-center gap-2 mb-8 max-w-2xl mx-auto hover:shadow-2xl transition-shadow">
-              <div className="flex-1 flex items-center gap-3 px-4">
-                <svg
-                  className="w-5 h-5 text-slate-400 dark:text-slate-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Search for your city..."
-                  className="w-full py-3 bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium"
-                />
-              </div>
-              <button className="flex items-center gap-2 px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-semibold text-sm border-l border-slate-200 dark:border-slate-700">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                Location
-              </button>
-              <Link
-                href="/dashboard"
-                className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 dark:from-blue-500 dark:to-emerald-500 dark:hover:from-blue-600 dark:hover:to-emerald-600 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl hover:scale-105 transform"
-              >
-                Search
-              </Link>
-            </div>
+            <SearchBar />
 
             {/* Popular Cities */}
             <div className="flex items-center gap-3 flex-wrap justify-center">
@@ -149,13 +94,7 @@ export default function Home(): React.ReactElement {
                 Popular:
               </span>
               {popularCities.map((city) => (
-                <button
-                  key={city}
-                  onClick={() => handleCityClick(city)}
-                  className="px-4 py-2 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-emerald-400 dark:hover:border-emerald-600 hover:text-emerald-600 dark:hover:text-emerald-400 hover:shadow-md dark:hover:shadow-emerald-900/50 transition-all transform hover:scale-105"
-                >
-                  {city}
-                </button>
+                <CityCard key={city} city={city} />
               ))}
             </div>
           </div>
@@ -286,16 +225,16 @@ export default function Home(): React.ReactElement {
                 <div className="absolute inset-0 bg-gradient-to-b from-blue-300 to-emerald-100 dark:from-blue-700 dark:to-emerald-900" />
                 
                 {/* Animated clouds */}
-                <div className="absolute top-8 left-8 w-24 h-12 bg-white rounded-full opacity-70" />
-                <div className="absolute top-20 right-12 w-28 h-14 bg-white rounded-full opacity-60" />
+                <div className="absolute top-8 left-8 w-24 h-12 bg-white rounded-full opacity-70 animate-pulse" />
+                <div className="absolute top-20 right-12 w-28 h-14 bg-white rounded-full opacity-60 animate-bounce" style={{ animationDuration: "3s" }} />
                 <div className="absolute top-40 left-1/4 w-20 h-10 bg-white rounded-full opacity-75" />
                 
-                {/* Sun */}
-                <div className="absolute top-12 right-1/4 w-16 h-16 bg-yellow-300 rounded-full shadow-2xl" />
+                {/* Sun with animation */}
+                <div className="absolute top-12 right-1/4 w-16 h-16 bg-yellow-300 rounded-full shadow-2xl animate-spin" style={{ animationDuration: "20s" }} />
                 
-                {/* Rain drops */}
+                {/* Rain drops animation */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-8xl">🌧️</div>
+                  <div className="text-8xl animate-bounce">🌧️</div>
                 </div>
                 
                 {/* Bottom accent */}
@@ -351,16 +290,17 @@ export default function Home(): React.ReactElement {
                   {[...Array(5)].map((_, i) => (
                     <svg
                       key={i}
-                      className="w-5 h-5 text-yellow-400"
+                      className="w-5 h-5 text-yellow-400 animate-bounce"
                       fill="currentColor"
                       viewBox="0 0 20 20"
+                      style={{ animationDelay: `${i * 0.1}s` }}
                     >
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   ))}
                 </div>
                 <p className="text-slate-700 dark:text-slate-300 mb-6 leading-relaxed italic">
-                  {testimonial.content}
+                  "{testimonial.content}"
                 </p>
                 <div>
                   <p className="font-semibold text-slate-900 dark:text-white">
@@ -380,11 +320,12 @@ export default function Home(): React.ReactElement {
       <section className="py-24 bg-gradient-to-b from-white dark:from-slate-950 to-slate-50 dark:to-slate-900">
         <div className="max-w-3xl mx-auto px-6">
           <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-blue-100 dark:from-blue-950 via-emerald-50 dark:via-emerald-950 to-emerald-100 dark:to-emerald-950 p-12 md:p-16">
-            {/* Weather icons background */}
-            <div className="absolute top-4 left-8 text-5xl">☀️</div>
-            <div className="absolute top-20 right-12 text-4xl">⛅</div>
-            <div className="absolute bottom-16 left-1/4 text-5xl">💧</div>
-            <div className="absolute bottom-8 right-1/4 text-4xl">🌬️</div>
+            {/* Animated weather icons background */}
+            <div className="absolute top-4 left-8 text-5xl animate-bounce" style={{ animationDuration: "2s" }}>☀️</div>
+            <div className="absolute top-20 right-12 text-4xl animate-pulse">⛅</div>
+            <div className="absolute bottom-16 left-1/4 text-5xl animate-bounce" style={{ animationDuration: "3s" }}>💧</div>
+            <div className="absolute bottom-8 right-1/4 text-4xl animate-spin" style={{ animationDuration: "4s" }}>🌬️</div>
+            
             <div className="relative z-10 text-center">
               <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-6">
                 Stay updated on climate insights

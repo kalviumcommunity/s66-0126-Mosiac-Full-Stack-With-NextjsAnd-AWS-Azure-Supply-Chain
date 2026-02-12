@@ -1,0 +1,536 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// USER MANAGEMENT & AUTHENTICATION
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String?   @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  avatar        String?
+  role          UserRole  @default(USER)
+  isVerified    Boolean   @default(false)
+  location      String?
+  city          String?
+  state         String?
+  country       String?
+  zipCode       String?
+  latitude      Float?
+  longitude     Float?
+  preferences   Json?     // Store user preferences as JSON
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLogin     DateTime?
+
+  // Relations
+  profile               Profile?
+  sessions              Session[]
+  alerts                Alert[]
+  groupMemberships      GroupMember[]
+  groupsCreated         Group[]                @relation("GroupCreator")
+  posts                 Post[]
+  comments              Comment[]
+  favorites             Favorite[]
+  notifications         Notification[]
+  supplyChainItems      SupplyChainItem[]
+  supplyChainAlerts     SupplyChainAlert[]
+  environmentalPledges  EnvironmentalPledge[]
+  dataSubscriptions     DataSubscription[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+  ANALYST
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("sessions")
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  bio         String?
+  website     String?
+  twitter     String?
+  linkedin    String?
+  phone       String?
+  organization String?
+  interests   String[] // Array of interests
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+// ============================================
+// ENVIRONMENTAL DATA MONITORING
+// ============================================
+
+model ClimateReading {
+  id              String   @id @default(cuid())
+  location        String
+  city            String?
+  state           String?
+  country         String
+  latitude        Float
+  longitude       Float
+  
+  // Temperature data
+  temperature     Float    // in Celsius
+  feelsLike       Float?
+  tempMin         Float?
+  tempMax         Float?
+  
+  // Air quality data
+  aqi             Int      // Air Quality Index (0-500)
+  pm25            Float?   // PM2.5 particulate matter
+  pm10            Float?   // PM10 particulate matter
+  co              Float?   // Carbon monoxide
+  no2             Float?   // Nitrogen dioxide
+  so2             Float?   // Sulfur dioxide
+  o3              Float?   // Ozone
+  
+  // Weather data
+  humidity        Float?   // Percentage
+  pressure        Float?   // hPa
+  visibility      Float?   // meters
+  windSpeed       Float?   // m/s
+  windDirection   Float?   // degrees
+  rainfall        Float?   // mm
+  snowfall        Float?   // mm
+  cloudCover      Int?     // Percentage
+  
+  // UV & Solar
+  uvIndex         Float?
+  solarRadiation  Float?   // W/m²
+  
+  // Metadata
+  source          String   // API source or sensor ID
+  readingTime     DateTime
+  createdAt       DateTime @default(now())
+
+  @@index([location, readingTime])
+  @@index([city, readingTime])
+  @@index([latitude, longitude])
+  @@index([readingTime])
+  @@map("climate_readings")
+}
+
+model AirGasComposition {
+  id          String   @id @default(cuid())
+  location    String
+  latitude    Float
+  longitude   Float
+  
+  // Gas compositions (in ppm or ppb)
+  co2         Float?   // Carbon dioxide (ppm)
+  ch4         Float?   // Methane (ppb)
+  n2o         Float?   // Nitrous oxide (ppb)
+  o2          Float?   // Oxygen (%)
+  
+  readingTime DateTime
+  source      String
+  createdAt   DateTime @default(now())
+
+  @@index([location, readingTime])
+  @@index([readingTime])
+  @@map("air_gas_compositions")
+}
+
+model EnvironmentalAlert {
+  id              String       @id @default(cuid())
+  alertType       AlertType
+  severity        SeverityLevel
+  title           String
+  description     String
+  location        String?
+  city            String?
+  state           String?
+  country         String?
+  latitude        Float?
+  longitude       Float?
+  radius          Float?       // Alert radius in km
+  
+  startTime       DateTime
+  endTime         DateTime?
+  isActive        Boolean      @default(true)
+  
+  // Associated values
+  aqiValue        Int?
+  temperatureValue Float?
+  uvIndexValue    Float?
+  
+  metadata        Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([alertType, isActive])
+  @@index([city, isActive])
+  @@index([startTime])
+  @@map("environmental_alerts")
+}
+
+enum AlertType {
+  AIR_QUALITY
+  HEAT_WAVE
+  COLD_WAVE
+  UV_WARNING
+  STORM
+  FLOOD
+  DROUGHT
+  WILDFIRE
+  POLLUTION_SPIKE
+}
+
+enum SeverityLevel {
+  LOW
+  MODERATE
+  HIGH
+  VERY_HIGH
+  EXTREME
+}
+
+// ============================================
+// USER ALERTS & NOTIFICATIONS
+// ============================================
+
+model Alert {
+  id          String    @id @default(cuid())
+  userId      String
+  type        AlertType
+  location    String
+  threshold   Float?    // User-defined threshold
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@map("alerts")
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  message     String
+  type        String   // 'alert', 'community', 'system'
+  isRead      Boolean  @default(false)
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ============================================
+// COMMUNITY & SOCIAL FEATURES
+// ============================================
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  city        String?
+  state       String?
+  country     String?
+  category    String?  // 'air-quality', 'waste-management', 'energy', etc.
+  avatar      String?
+  coverImage  String?
+  isPublic    Boolean  @default(true)
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User          @relation("GroupCreator", fields: [createdById], references: [id])
+  members   GroupMember[]
+  posts     Post[]
+
+  @@index([slug])
+  @@index([city])
+  @@index([category])
+  @@map("groups")
+}
+
+model GroupMember {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  role      GroupRole @default(MEMBER)
+  joinedAt  DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@map("group_members")
+}
+
+enum GroupRole {
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  groupId     String?
+  authorId    String
+  title       String
+  content     String
+  images      String[] // Array of image URLs
+  tags        String[]
+  likes       Int      @default(0)
+  views       Int      @default(0)
+  isPinned    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  group    Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments Comment[]
+
+  @@index([groupId, createdAt])
+  @@index([authorId])
+  @@map("posts")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  authorId  String
+  content   String
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+  @@map("comments")
+}
+
+model EnvironmentalPledge {
+  id          String      @id @default(cuid())
+  userId      String
+  pledgeType  PledgeType
+  quantity    Int         // Number of trees, km not driven, kWh saved, etc.
+  unit        String      // 'trees', 'km', 'kWh', 'kg'
+  description String?
+  status      PledgeStatus @default(ACTIVE)
+  startDate   DateTime
+  endDate     DateTime?
+  verifiedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([pledgeType, status])
+  @@map("environmental_pledges")
+}
+
+enum PledgeType {
+  PLANT_TREES
+  REDUCE_DRIVING
+  SAVE_ENERGY
+  REDUCE_WASTE
+  RENEWABLE_ENERGY
+  WATER_CONSERVATION
+}
+
+enum PledgeStatus {
+  ACTIVE
+  COMPLETED
+  VERIFIED
+  CANCELLED
+}
+
+// ============================================
+// SUPPLY CHAIN MONITORING
+// ============================================
+
+model SupplyChainItem {
+  id              String   @id @default(cuid())
+  userId          String
+  productName     String
+  productCode     String?  @unique
+  category        String
+  origin          String   // Origin location
+  currentLocation String
+  destination     String
+  
+  // Environmental metrics
+  carbonFootprint Float?   // kg CO2
+  energyUsed      Float?   // kWh
+  waterUsed       Float?   // liters
+  wasteGenerated  Float?   // kg
+  
+  // Tracking
+  status          SupplyChainStatus @default(IN_TRANSIT)
+  temperature     Float?   // Current temperature if applicable
+  humidity        Float?   // Current humidity if applicable
+  
+  estimatedArrival DateTime?
+  actualArrival    DateTime?
+  
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events     SupplyChainEvent[]
+  alerts     SupplyChainAlert[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([productCode])
+  @@map("supply_chain_items")
+}
+
+enum SupplyChainStatus {
+  PENDING
+  IN_TRANSIT
+  ARRIVED
+  DELAYED
+  CANCELLED
+  DELIVERED
+}
+
+model SupplyChainEvent {
+  id          String   @id @default(cuid())
+  itemId      String
+  eventType   String   // 'departure', 'arrival', 'checkpoint', 'delay'
+  location    String
+  latitude    Float?
+  longitude   Float?
+  description String?
+  timestamp   DateTime
+  createdAt   DateTime @default(now())
+
+  item SupplyChainItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId, timestamp])
+  @@map("supply_chain_events")
+}
+
+model SupplyChainAlert {
+  id          String    @id @default(cuid())
+  itemId      String
+  userId      String
+  alertType   String    // 'temperature', 'delay', 'environmental'
+  severity    SeverityLevel
+  message     String
+  isResolved  Boolean   @default(false)
+  resolvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  item SupplyChainItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([itemId, isResolved])
+  @@index([userId])
+  @@map("supply_chain_alerts")
+}
+
+// ============================================
+// DATA MANAGEMENT & ANALYTICS
+// ============================================
+
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  type       String   // 'location', 'group', 'post'
+  referenceId String  // ID of the favorited item
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, referenceId])
+  @@index([userId])
+  @@map("favorites")
+}
+
+model DataSubscription {
+  id          String   @id @default(cuid())
+  userId      String
+  dataType    String   // 'climate', 'aqi', 'uv', 'temperature'
+  location    String
+  frequency   String   // 'realtime', 'hourly', 'daily', 'weekly'
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@map("data_subscriptions")
+}
+
+model SystemSettings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  category  String?
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  action      String
+  entityType  String?
+  entityId    String?
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
