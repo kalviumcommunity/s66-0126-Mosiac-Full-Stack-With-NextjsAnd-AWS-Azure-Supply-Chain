@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:weather": "node weather-server.js",
-    "dev:all": "concurrently \"npm run dev\" \"npm run dev:weather\"",
+    "dev:all": "concurrently --kill-others --raw \"npm run dev\" \"npm run dev:weather\"",
+    "dev:windows": "start /B cmd /C \"npm run dev\" && start /B cmd /C \"npm run dev:weather\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
