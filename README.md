@@ -1,4 +1,16 @@
+# Climatrix - Climate Intelligence Dashboard
+
+[![CI](https://github.com/kalviumcommunity/s66-0126-Mosiac-Full-Stack-With-NextjsAnd-AWS-Azure-Supply-Chain/actions/workflows/ci.yml/badge.svg)](https://github.com/kalviumcommunity/s66-0126-Mosiac-Full-Stack-With-NextjsAnd-AWS-Azure-Supply-Chain/actions/workflows/ci.yml)
+[![CD](https://github.com/kalviumcommunity/s66-0126-Mosiac-Full-Stack-With-NextjsAnd-AWS-Azure-Supply-Chain/actions/workflows/cd.yml/badge.svg)](https://github.com/kalviumcommunity/s66-0126-Mosiac-Full-Stack-With-NextjsAnd-AWS-Azure-Supply-Chain/actions/workflows/cd.yml)
+[![Docker](https://github.com/kalviumcommunity/s66-0126-Mosiac-Full-Stack-With-NextjsAnd-AWS-Azure-Supply-Chain/actions/workflows/docker.yml/badge.svg)](https://github.com/kalviumcommunity/s66-0126-Mosiac-Full-Stack-With-NextjsAnd-AWS-Azure-Supply-Chain/actions/workflows/docker.yml)
+
 Climatrix is a climate intelligence dashboard designed to help citizens understand complex environmental data through clear visualizations and actionable insights. Since different parts of the application have different data freshness and performance requirements, we use Static Rendering (SSG), Dynamic Rendering (SSR), and Hybrid Rendering (ISR) strategically to optimize speed, scalability, and accuracy.
+
+## 🚀 Quick Links
+
+- 📖 [Setup Guide](frontend/QUICK_START.md)
+- 🐳 [Docker Guide](DOCKER.md)
+- 🔄 [CI/CD Documentation](CICD.md)
 
 ---
 

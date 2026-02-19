@@ -1,0 +1,264 @@
+name: CD - Continuous Deployment
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment Environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '20.x'
+  DOCKER_IMAGE: climatrix-app
+
+jobs:
+  # Deploy to Vercel (Recommended for Next.js)
+  deploy-vercel:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+      url: ${{ steps.deploy.outputs.url }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: frontend
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: frontend
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$URL" >> $GITHUB_OUTPUT
+        working-directory: frontend
+
+  # Deploy to AWS (EC2/ECS)
+  deploy-aws:
+    name: Deploy to AWS
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'production' || github.ref == 'refs/heads/main'
+    environment:
+      name: aws-production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: climatrix
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./frontend
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Deploy to ECS
+        run: |
+          aws ecs update-service \
+            --cluster ${{ secrets.ECS_CLUSTER }} \
+            --service ${{ secrets.ECS_SERVICE }} \
+            --force-new-deployment
+
+  # Deploy to Azure (Container Apps/App Service)
+  deploy-azure:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'production' || github.ref == 'refs/heads/main'
+    environment:
+      name: azure-production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Docker image
+        env:
+          ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ACR_LOGIN_SERVER/climatrix:$IMAGE_TAG ./frontend
+          docker tag $ACR_LOGIN_SERVER/climatrix:$IMAGE_TAG $ACR_LOGIN_SERVER/climatrix:latest
+          docker push $ACR_LOGIN_SERVER/climatrix:$IMAGE_TAG
+          docker push $ACR_LOGIN_SERVER/climatrix:latest
+
+      - name: Deploy to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          containerAppName: ${{ secrets.AZURE_CONTAINER_APP_NAME }}
+          resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/climatrix:${{ github.sha }}
+
+  # Deploy to DigitalOcean (Alternative)
+  deploy-digitalocean:
+    name: Deploy to DigitalOcean
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'staging'
+    environment:
+      name: digitalocean-staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Deploy to DigitalOcean App Platform
+        run: |
+          doctl apps create-deployment ${{ secrets.DO_APP_ID }}
+
+  # Deploy using Docker Compose (VPS/EC2)
+  deploy-docker-compose:
+    name: Deploy via Docker Compose
+    runs-on: ubuntu-latest
+    if: github.event.inputs.environment == 'staging'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "docker-compose.yml,frontend/Dockerfile,frontend/*"
+          target: /home/app/climatrix
+
+      - name: Deploy with Docker Compose
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /home/app/climatrix
+            docker-compose pull
+            docker-compose up -d --build
+            docker system prune -af
+
+  # Database Migrations
+  migrate-database:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    needs: [deploy-vercel]
+    if: success()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run migrations
+        run: |
+          cd frontend
+          npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  # Deployment Success Notification
+  notify-deployment:
+    name: Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [deploy-vercel, deploy-aws, deploy-azure]
+    if: always()
+    
+    steps:
+      - name: Send Slack notification
+        if: success()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "✅ Deployment successful for Climatrix!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Deployment completed successfully!\n*Commit:* ${{ github.sha }}\n*Branch:* ${{ github.ref_name }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send failure notification
+        if: failure()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "❌ Deployment failed for Climatrix",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Deployment failed!\n*Commit:* ${{ github.sha }}\n*Branch:* ${{ github.ref_name }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
